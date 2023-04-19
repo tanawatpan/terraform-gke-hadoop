@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+  namespace: hadoop
+spec:
+  selector:
+    matchLabels:
+      app: spark-master
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spark-master
+    spec:
+      containers:
+        - name: spark-master
+          image: gcr.io/dev-workspace-20230409/hadoo-spark:latest
+          env:
+            - name: NODE_TYPE
+              value: "SPARK_MASTER"
+            - name: SPARK_MASTER_HOSTNAME
+              value: "0.0.0.0"
+            - name: NAMENODE_HOSTNAME
+              value: "namenode"
+          ports:
+            - containerPort: 7077
+            - containerPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+  namespace: hadoop
+spec:
+  selector:
+    matchLabels:
+      app: spark-worker
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: spark-worker
+    spec:
+      containers:
+        - name: spark-worker
+          image: gcr.io/dev-workspace-20230409/hadoo-spark:latest
+          env:
+            - name: NODE_TYPE
+              value: "SPARK_WORKER"
+            - name: NAMENODE_HOSTNAME
+              value: "namenode"
+            - name: SPARK_MASTER_HOSTNAME
+              value: "spark-master"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-history
+  namespace: hadoop
+spec:
+  selector:
+    matchLabels:
+      app: spark-history
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spark-history
+    spec:
+      containers:
+        - name: spark-history
+          image: gcr.io/dev-workspace-20230409/hadoo-spark:latest
+          env:
+            - name: NODE_TYPE
+              value: "SPARK_HISTORY"
+            - name: NAMENODE_HOSTNAME
+              value: "namenode"
+            - name: SPARK_MASTER_HOSTNAME
+              value: "spark-master"
+          ports:
+            - containerPort: 18080

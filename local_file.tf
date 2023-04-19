@@ -47,7 +47,7 @@ resource "local_file" "setup" {
 		SPARK_FILE="$(find /tmp/ -type f -name 'spark-*' | head -n 1 | xargs basename)"
 
 		function create_user {
-			adduser --disabled-password --gecos 'user for Hadoop, Yarn, and Spark' $HADOOP_USER
+			adduser --disabled-password --gecos 'user for Hadoop and Spark' $HADOOP_USER
 			adduser $HADOOP_USER root
 
 			su - $HADOOP_USER -c "mkdir -p /home/$HADOOP_USER/.ssh"
@@ -69,7 +69,7 @@ resource "local_file" "setup" {
 		}
 
 		function config_environment_variables {
-			su - $HADOOP_USER -c "cat >> ~/.bashrc <<-EOL
+			su - $HADOOP_USER -c "cat > ~/.bashrc <<-EOL
 				export HADOOP_HOME=$HADOOP_HOME
 				export HADOOP_HDFS_HOME=$HADOOP_HOME
 				export HADOOP_MAPRED_HOME=$HADOOP_HOME
@@ -78,9 +78,6 @@ resource "local_file" "setup" {
 
 				export HADOOP_OPTS='-Djava.library.path=$HADOOP_HOME/lib/native'
 				export HADOOP_COMMON_LIB_NATIVE_DIR="$HADOOP_HOME/lib/native"
-
-				export YARN_HOME=$HADOOP_HOME
-				export YARN_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
 				export JAVA_HOME=$JAVA_HOME
 				export PATH=\\\$PATH:\\\$HADOOP_HOME/bin:\\\$HADOOP_HOME/sbin:\\\$SPARK_HOME/bin:\\\$SPARK_HOME/sbin:$PYTHON_VENV_PATH/bin
@@ -150,6 +147,8 @@ resource "local_file" "entrypoint" {
 		set -e
 		set -x
 
+		source ~/.bashrc
+
 		NODE_TYPE=$${NODE_TYPE^^}
 		echo "NODE_TYPE: $NODE_TYPE"
 
@@ -199,79 +198,9 @@ resource "local_file" "entrypoint" {
 				        <name>dfs.datanode.data.dir</name>
 				        <value>file:///hdfs/datanode</value>
 				    </property>
-				</configuration>
-			EOL
-
-			# Update yarn-site.xml
-			cat > $HADOOP_HOME/etc/hadoop/yarn-site.xml <<-EOL
-				<configuration>
 				    <property>
-				        <name>yarn.resourcemanager.hostname</name>
-				        <value>$NAMENODE_HOSTNAME</value>
-				    </property>
-				    <property>
-				        <name>yarn.nodemanager.aux-services</name>
-				        <value>mapreduce_shuffle</value>
-				    </property>
-				    <property>
-				        <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
-				        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
-				    </property>
-
-				    <property>
-				        <name>yarn.nodemanager.resource.memory-mb</name>
-				        <value>2048</value>
-				    </property>
-				    <property>
-				        <name>yarn.scheduler.maximum-allocation-mb</name>
-				        <value>2048</value>
-				    </property>
-				    <property>
-				        <name>yarn.scheduler.minimum-allocation-mb</name>
-				        <value>512</value>
-				    </property>
-				    <property>
-				        <name>yarn.nodemanager.vmem-check-enabled</name>
+				        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
 				        <value>false</value>
-				    </property>
-				</configuration>
-			EOL
-
-			# Update mapred-site.xml
-			cat > $HADOOP_HOME/etc/hadoop/mapred-site.xml <<-EOL
-				<configuration>
-				    <property>
-				        <name>mapreduce.jobtracker.address</name>
-				        <value>$NAMENODE_HOSTNAME:54311</value>
-				    </property>
-				    <property>
-				        <name>mapreduce.framework.name</name>
-				        <value>yarn</value>
-				    </property>
-
-				    <property>
-				        <name>yarn.app.mapreduce.am.resource.mb</name>
-				        <value>512</value>
-				    </property>
-				    <property>
-				        <name>mapreduce.map.memory.mb</name>
-				        <value>512</value>
-				    </property>
-				    <property>
-				        <name>mapreduce.reduce.memory.mb</name>
-				        <value>512</value>
-				    </property>
-				    <property>
-				        <name>yarn.app.mapreduce.am.env</name>
-				        <value>HADOOP_MAPRED_HOME=$HADOOP_HOME</value>
-				    </property>
-				    <property>
-				        <name>mapreduce.map.env</name>
-				        <value>HADOOP_MAPRED_HOME=$HADOOP_HOME</value>
-				    </property>
-				    <property>
-				        <name>mapreduce.reduce.env</name>
-				        <value>HADOOP_MAPRED_HOME=$HADOOP_HOME</value>
 				    </property>
 				</configuration>
 			EOL
@@ -294,7 +223,6 @@ resource "local_file" "entrypoint" {
 			# Configure spark-defaults
 			cat > $SPARK_HOME/conf/spark-defaults.conf <<-EOL
 				spark.master             spark://$SPARK_MASTER_HOSTNAME:7077
-				spark.yarn.am.memory     512m
 				spark.driver.cores       $${SPARK_DRIVER_CORES:=1}
 				spark.driver.memory      $${SPARK_DRIVER_MEMORY:=512m}
 				spark.executor.cores     $${SPARK_EXECUTOR_CORES:=1}
@@ -352,10 +280,10 @@ resource "local_file" "dockerfile" {
 		FROM ubuntu:kinetic as builder
 
 		RUN apt-get -q -y update && \
-			apt-get -q -y install wget ssh openjdk-11-jre
+			apt-get -q -y install wget ssh net-tools telnet curl openjdk-11-jre
 
-		RUN wget -P /tmp https://downloads.apache.org/hadoop/common/hadoop-${local.hadoop_version}/hadoop-${local.hadoop_version}.tar.gz && \
-			wget -P /tmp https://downloads.apache.org/spark/spark-${local.spark_version}/spark-${local.spark_version}-bin-hadoop3.tgz
+		RUN wget -q -P /tmp https://downloads.apache.org/hadoop/common/hadoop-${local.hadoop_version}/hadoop-${local.hadoop_version}.tar.gz && \
+			wget -q -P /tmp https://downloads.apache.org/spark/spark-${local.spark_version}/spark-${local.spark_version}-bin-hadoop3.tgz
 
 		COPY ${basename(local_file.public_key.filename)} /tmp/${basename(local_file.public_key.filename)}
 		COPY ${basename(local_file.private_key.filename)}  /tmp/${basename(local_file.private_key.filename)}
@@ -373,12 +301,15 @@ resource "local_file" "dockerfile" {
 
 		USER hadoop
 		WORKDIR /home/hadoop
-		CMD ["/bin/bash", "-i", "${basename(local_file.entrypoint.filename)}"]
+		CMD ["/bin/bash", "${basename(local_file.entrypoint.filename)}"]
  	 EOT
 
   provisioner "local-exec" {
     command = <<-EOT
-		docker build -t ${local.image.name}:${local.image.tag} hadoop/
+		set -e
+		set -x
+		docker build -t ${basename(local.image.name)}:${local.image.tag} hadoop/
+		docker tag ${basename(local.image.name)}:${local.image.tag} ${local.image.name}:${local.image.tag}
 		docker push ${local.image.name}:${local.image.tag}
 	EOT
   }
@@ -500,3 +431,5 @@ resource "local_file" "docker_compose" {
 		  datanode2-hdfs: {}
 	EOT
 }
+
+

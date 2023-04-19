@@ -1,37 +1,11 @@
-resource "google_container_cluster" "hadoop_cluster" {
-  name               = "hadoop-cluster"
+resource "google_container_cluster" "hadoop" {
+  name               = "hadoop"
   location           = var.zone
-  initial_node_count = 2
-
-  node_config {
-    preemptible  = true
-    machine_type = "n1-standard-2"
-    disk_size_gb = 10
-    disk_type    = "pd-balanced"
-    image_type   = "COS_CONTAINERD"
-
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
-
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/devstorage.read_write",
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring",
-      "https://www.googleapis.com/auth/servicecontrol",
-      "https://www.googleapis.com/auth/service.management.readonly",
-      "https://www.googleapis.com/auth/trace.append",
-    ]
-
-  }
-
-  network    = google_compute_network.hadoop_gke.self_link
-  subnetwork = google_compute_subnetwork.hadoop_gke.self_link
+  network            = google_compute_network.hadoop_gke.self_link
+  subnetwork         = google_compute_subnetwork.hadoop_gke.self_link
+  initial_node_count = 3
 
   remove_default_node_pool = true
-  resource_labels = {
-    cluster = "hadoop-cluster"
-  }
 
   addons_config {
     horizontal_pod_autoscaling {
@@ -66,14 +40,14 @@ resource "google_container_cluster" "hadoop_cluster" {
 
 resource "google_container_node_pool" "hadoop_node_pool" {
   name       = "hadoop-node-pool"
-  cluster    = google_container_cluster.hadoop_cluster.name
+  cluster    = google_container_cluster.hadoop.name
   location   = var.zone
-  node_count = 2
+  node_count = 3
 
   node_config {
     preemptible  = true
     machine_type = "n1-standard-2"
-    disk_size_gb = 10
+    disk_size_gb = 30
     disk_type    = "pd-balanced"
     image_type   = "COS_CONTAINERD"
 
