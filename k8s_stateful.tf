@@ -58,6 +58,16 @@ resource "kubernetes_stateful_set" "namenode" {
             container_port = 9870
           }
 
+          readiness_probe {
+            http_get {
+              path = "/index.html"
+              port = "9870"
+            }
+
+            initial_delay_seconds = 60
+            period_seconds        = 10
+          }
+
           volume_mount {
             mount_path = "/hdfs/namenode"
             name       = "namenode-data"
@@ -232,7 +242,7 @@ resource "kubernetes_stateful_set" "jupyter" {
           }
 
           env {
-            name = "NOTEBOOK_ARGS"
+            name  = "NOTEBOOK_ARGS"
             value = "--NotebookApp.ip='0.0.0.0' --NotebookApp.port=8888 --NotebookApp.open_browser=False --NotebookApp.token='P@ssw0rd' --NotebookApp.allow_origin='*'"
           }
 
@@ -248,6 +258,16 @@ resource "kubernetes_stateful_set" "jupyter" {
 
           port {
             container_port = 8888
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/login"
+              port = "8888"
+            }
+
+            initial_delay_seconds = 60
+            period_seconds        = 10
           }
 
           volume_mount {

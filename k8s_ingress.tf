@@ -1,16 +1,14 @@
-resource "kubernetes_manifest" "lb_http_to_https" {
+resource "kubernetes_manifest" "app_frontend_config" {
   manifest = {
-    "apiVersion" = "networking.gke.io/v1beta1"
-    "kind"       = "FrontendConfig"
-    "metadata" = {
-      "name"      = "lb-http-to-https"
-      "namespace" = kubernetes_namespace.hadoop.metadata.0.name
+    apiVersion = "networking.gke.io/v1beta1"
+    kind       = "FrontendConfig"
+    metadata = {
+      name      = "app-frontend-config"
+      namespace = kubernetes_namespace.hadoop.metadata.0.name
     }
-
-    "spec" = {
-      "redirectToHttps" = {
-        enabled          = "true"
-        responseCodeName = "PERMANENT_REDIRECT"
+    spec = {
+      redirectToHttps = {
+        enabled = true
       }
     }
   }
@@ -25,8 +23,8 @@ resource "kubernetes_ingress_v1" "hadoop_ingress" {
     annotations = {
       "kubernetes.io/ingress.global-static-ip-name" = google_compute_global_address.lb_ip.name
       "ingress.gcp.kubernetes.io/pre-shared-cert"   = google_compute_managed_ssl_certificate.hadoop_ssl_certificate.name
-      "kubernetes.io/ingress.allow-http"            = "false"
-      "networking.gke.io/v1beta1"                   = kubernetes_manifest.lb_http_to_https.manifest.metadata["name"]
+      "networking.gke.io/v1beta1.FrontendConfig"    = kubernetes_manifest.app_frontend_config.object.metadata.name
+      # "kubernetes.io/ingress.allow-http"            = "false"
     }
   }
 

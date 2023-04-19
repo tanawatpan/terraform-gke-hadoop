@@ -47,6 +47,16 @@ resource "kubernetes_deployment" "spark_master" {
           port {
             container_port = 8080
           }
+
+          readiness_probe {
+            http_get {
+              path = "/"
+              port = "8080"
+            }
+
+            initial_delay_seconds = 60
+            period_seconds        = 10
+          }
         }
       }
     }
@@ -144,6 +154,16 @@ resource "kubernetes_deployment" "spark_history" {
 
           port {
             container_port = 18080
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/"
+              port = "18080"
+            }
+
+            initial_delay_seconds = 60
+            period_seconds        = 10
           }
         }
       }
