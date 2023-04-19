@@ -1,4 +1,4 @@
-resource "kubernetes_service" "namenode" {
+resource "kubernetes_service_v1" "namenode" {
   metadata {
     name      = "namenode"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -16,7 +16,7 @@ resource "kubernetes_service" "namenode" {
   }
 }
 
-resource "kubernetes_service" "spark_master" {
+resource "kubernetes_service_v1" "spark_master" {
   metadata {
     name      = "spark-master"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -34,34 +34,15 @@ resource "kubernetes_service" "spark_master" {
   }
 }
 
-resource "kubernetes_service" "namenode_ui" {
-  metadata {
-    name      = "namenode-ui"
-    namespace = kubernetes_namespace.hadoop.metadata.0.name
-  }
-
-  spec {
-    type = "LoadBalancer"
-
-    port {
-      port        = 9870
-      target_port = 9870
-    }
-
-    selector = {
-      app = "namenode"
-    }
-  }
-}
-
-resource "kubernetes_service" "spark_master_ui" {
+# Spark Master UI Service
+resource "kubernetes_service_v1" "spark_master_ui" {
   metadata {
     name      = "spark-master-ui"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
-    type = "LoadBalancer"
+    type = "NodePort"
 
     port {
       port        = 8080
@@ -74,14 +55,36 @@ resource "kubernetes_service" "spark_master_ui" {
   }
 }
 
-resource "kubernetes_service" "spark_history" {
+# HDFS Service
+resource "kubernetes_service_v1" "namenode_ui" {
+  metadata {
+    name      = "namenode-ui"
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
+  }
+
+  spec {
+    type = "NodePort"
+
+    port {
+      port        = 9870
+      target_port = 9870
+    }
+
+    selector = {
+      app = "namenode"
+    }
+  }
+}
+
+# Spark History Service
+resource "kubernetes_service_v1" "spark_history" {
   metadata {
     name      = "spark-history"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
-    type = "LoadBalancer"
+    type = "NodePort"
 
     port {
       port        = 18080
@@ -90,6 +93,26 @@ resource "kubernetes_service" "spark_history" {
 
     selector = {
       app = "spark-history"
+    }
+  }
+}
+
+resource "kubernetes_service_v1" "jupyter" {
+  metadata {
+    name      = "jupyter"
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
+  }
+
+  spec {
+    type = "NodePort"
+
+    port {
+      port        = 8888
+      target_port = 8888
+    }
+
+    selector = {
+      app = "jupyter"
     }
   }
 }

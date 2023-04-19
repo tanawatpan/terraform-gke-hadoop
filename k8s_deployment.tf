@@ -37,7 +37,7 @@ resource "kubernetes_deployment" "spark_master" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = kubernetes_service.namenode.metadata.0.name
+            value = kubernetes_service_v1.namenode.metadata.0.name
           }
 
           port {
@@ -87,12 +87,12 @@ resource "kubernetes_deployment" "spark_worker" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = kubernetes_service.namenode.metadata.0.name
+            value = kubernetes_service_v1.namenode.metadata.0.name
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = kubernetes_service.spark_master.metadata.0.name
+            value = kubernetes_service_v1.spark_master.metadata.0.name
           }
         }
       }
@@ -134,12 +134,12 @@ resource "kubernetes_deployment" "spark_history" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = kubernetes_service.namenode.metadata.0.name
+            value = kubernetes_service_v1.namenode.metadata.0.name
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = kubernetes_service.spark_master.metadata.0.name
+            value = kubernetes_service_v1.spark_master.metadata.0.name
           }
 
           port {
