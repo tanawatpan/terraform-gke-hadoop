@@ -144,9 +144,6 @@ resource "local_file" "entrypoint" {
   content  = <<-EOT
 		#!/bin/bash
 
-		set -e
-		set -x
-
 		source ~/.bashrc
 
 		NODE_TYPE=$${NODE_TYPE^^}
