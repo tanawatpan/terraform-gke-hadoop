@@ -7,7 +7,26 @@ resource "google_compute_network" "hadoop_gke" {
 resource "google_compute_subnetwork" "hadoop_gke" {
   name          = "hadoop-gke"
   network       = google_compute_network.hadoop_gke.self_link
-  ip_cidr_range = "10.0.0.0/28"
+  ip_cidr_range = "192.168.0.0/28"
+}
+
+# Cloud Router
+resource "google_compute_router" "router" {
+  name    = "cloud-router-1"
+  network = google_compute_network.hadoop_gke.self_link
+}
+
+# Cloud NAT
+resource "google_compute_router_nat" "nat" {
+  name                               = "cloud-nat-1"
+  router                             = google_compute_router.router.name
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = false
+    filter = "ERRORS_ONLY"
+  }
 }
 
 resource "google_compute_global_address" "lb_ip" {

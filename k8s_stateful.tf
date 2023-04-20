@@ -31,11 +31,11 @@ resource "kubernetes_stateful_set" "namenode" {
           command = [
             "/bin/sh",
             "-c",
-            "rm -rf /hdfs/namenode/* && chown -R 1000:1000 /hdfs/namenode",
+            "rm -rf /data/lost+found && chown -R 1000:1000 /data",
           ]
 
           volume_mount {
-            mount_path = "/hdfs/namenode"
+            mount_path = "/data"
             name       = "namenode-data"
           }
         }
@@ -69,7 +69,7 @@ resource "kubernetes_stateful_set" "namenode" {
           }
 
           volume_mount {
-            mount_path = "/hdfs/namenode"
+            mount_path = "/data"
             name       = "namenode-data"
           }
         }
@@ -128,11 +128,11 @@ resource "kubernetes_stateful_set" "datanode" {
           command = [
             "/bin/sh",
             "-c",
-            "rm -rf /hdfs/datanode/lost+found && chown -R 1000:1000 /hdfs/datanode",
+            "rm -rf /data/lost+found && chown -R 1000:1000 /data",
           ]
 
           volume_mount {
-            mount_path = "/hdfs/datanode"
+            mount_path = "/data"
             name       = "datanode-data"
           }
         }
@@ -152,7 +152,7 @@ resource "kubernetes_stateful_set" "datanode" {
           }
 
           volume_mount {
-            mount_path = "/hdfs/datanode"
+            mount_path = "/data"
             name       = "datanode-data"
           }
         }
@@ -180,6 +180,7 @@ resource "kubernetes_stateful_set" "datanode" {
 }
 
 resource "kubernetes_stateful_set" "jupyter" {
+  depends_on = [google_compute_router_nat.nat]
   metadata {
     name      = "jupyter"
     namespace = kubernetes_namespace.hadoop.metadata.0.name

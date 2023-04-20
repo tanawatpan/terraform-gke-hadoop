@@ -93,10 +93,9 @@ resource "local_file" "setup" {
 			mv -f /tmp/$(find /tmp/ -type d -name 'hadoop-*' | head -n 1 | xargs basename) $HADOOP_HOME
 			rm -f /tmp/$HADOOP_FILE
 
-			mkdir -p /hdfs/namenode
-			mkdir -p /hdfs/datanode
-			chown -R $HADOOP_USER:$HADOOP_USER /hdfs
-			chmod -R 700 /hdfs
+			mkdir -p /data
+			chown -R $HADOOP_USER:$HADOOP_USER /data
+			chmod -R 700 /data
 
 			mkdir -p $HADOOP_HOME/logs
 			chown -R $HADOOP_USER:$HADOOP_USER $HADOOP_HOME
@@ -189,11 +188,11 @@ resource "local_file" "entrypoint" {
 				    </property>
 				    <property>
 				        <name>dfs.namenode.name.dir</name>
-				        <value>file:///hdfs/namenode</value>
+				        <value>file:///data</value>
 				    </property>
 				    <property>
 				        <name>dfs.datanode.data.dir</name>
-				        <value>file:///hdfs/datanode</value>
+				        <value>file:///data</value>
 				    </property>
 				    <property>
 				        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
@@ -240,11 +239,10 @@ resource "local_file" "entrypoint" {
 
 		function start {
 		    if [ "$NODE_TYPE" == "NAMENODE" ]; then
-		        [ ! -f /hdfs/namenode/in_use.lock ] && hdfs namenode -format || rm -f /hdfs/namenode/in_use.lock
+		        [ ! -f /data/current/VERSION ] && hdfs namenode -format
 		        hdfs namenode
 
 		    elif [ "$NODE_TYPE" == "DATANODE" ]; then
-		        [ -f /hdfs/datanode/in_use.lock ] && rm -f /hdfs/datanode/in_use.lock
 		        hdfs datanode
 
 		    elif [ "$NODE_TYPE" == "SPARK_MASTER" ]; then
@@ -302,6 +300,7 @@ resource "local_file" "dockerfile" {
  	 EOT
 
   provisioner "local-exec" {
+    # gcloud builds submit --tag ${local.image.name}:${local.image.tag} hadoop/ 
     command = <<-EOT
 		set -e
 		set -x
@@ -346,7 +345,7 @@ resource "local_file" "docker_compose" {
 		    ports:
 		      - "9870:9870"
 		    volumes:
-		      - namenode-data:/hdfs/namenode
+		      - namenode-data:/data
 		    environment:
 		      NODE_TYPE: 'NAMENODE'
 		      NAMENODE_HOSTNAME: 'namenode'
@@ -358,7 +357,7 @@ resource "local_file" "docker_compose" {
 		      hadoop-network:
 		        ipv4_address: 10.0.0.4
 		    volumes:
-		      - datanode1-hdfs:/hdfs/datanode
+		      - datanode1-hdfs:/data
 		    environment:
 		      NODE_TYPE: 'DATANODE'
 		      NAMENODE_HOSTNAME: 'namenode'
@@ -370,7 +369,7 @@ resource "local_file" "docker_compose" {
 		      hadoop-network:
 		        ipv4_address: 10.0.0.5
 		    volumes:
-		      - datanode2-hdfs:/hdfs/datanode
+		      - datanode2-hdfs:/data
 		    environment:
 		      NODE_TYPE: 'DATANODE'
 		      NAMENODE_HOSTNAME: 'namenode'

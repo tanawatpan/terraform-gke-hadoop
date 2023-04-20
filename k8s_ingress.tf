@@ -1,9 +1,9 @@
-resource "kubernetes_manifest" "app_frontend_config" {
-  manifest = {
+resource "kubectl_manifest" "frontend_https_redirect" {
+  yaml_body = yamlencode({
     apiVersion = "networking.gke.io/v1beta1"
     kind       = "FrontendConfig"
     metadata = {
-      name      = "app-frontend-config"
+      name      = "frontend-https-redirect"
       namespace = kubernetes_namespace.hadoop.metadata.0.name
     }
     spec = {
@@ -11,7 +11,7 @@ resource "kubernetes_manifest" "app_frontend_config" {
         enabled = true
       }
     }
-  }
+  })
 }
 
 resource "kubernetes_ingress_v1" "hadoop_ingress" {
@@ -23,7 +23,7 @@ resource "kubernetes_ingress_v1" "hadoop_ingress" {
     annotations = {
       "kubernetes.io/ingress.global-static-ip-name" = google_compute_global_address.lb_ip.name
       "ingress.gcp.kubernetes.io/pre-shared-cert"   = google_compute_managed_ssl_certificate.hadoop_ssl_certificate.name
-      "networking.gke.io/v1beta1.FrontendConfig"    = kubernetes_manifest.app_frontend_config.object.metadata.name
+      "networking.gke.io/v1beta1.FrontendConfig"    = kubectl_manifest.frontend_https_redirect.name
       # "kubernetes.io/ingress.allow-http"            = "false"
     }
   }

@@ -1,11 +1,22 @@
 resource "google_container_cluster" "hadoop" {
-  name               = "hadoop"
-  location           = var.zone
-  network            = google_compute_network.hadoop_gke.self_link
-  subnetwork         = google_compute_subnetwork.hadoop_gke.self_link
-  initial_node_count = 3
+  name            = "hadoop"
+  location        = var.zone
+  network         = google_compute_network.hadoop_gke.self_link
+  subnetwork      = google_compute_subnetwork.hadoop_gke.self_link
+  networking_mode = "VPC_NATIVE"
 
+  initial_node_count       = 1
   remove_default_node_pool = true
+
+  private_cluster_config {
+    enable_private_nodes   = true
+    master_ipv4_cidr_block = "172.16.0.32/28"
+  }
+
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block  = "10.0.0.0/14"
+    services_ipv4_cidr_block = "10.4.0.0/20"
+  }
 
   addons_config {
     horizontal_pod_autoscaling {
@@ -47,9 +58,8 @@ resource "google_container_node_pool" "hadoop_node_pool" {
   node_config {
     preemptible  = true
     machine_type = "n1-standard-2"
-    disk_size_gb = 30
+    disk_size_gb = 20
     disk_type    = "pd-balanced"
-    image_type   = "COS_CONTAINERD"
 
     metadata = {
       disable-legacy-endpoints = "true"
