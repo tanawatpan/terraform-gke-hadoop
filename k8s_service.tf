@@ -1,3 +1,4 @@
+# ClusterIP
 resource "kubernetes_service_v1" "namenode" {
   metadata {
     name      = "namenode"
@@ -34,6 +35,7 @@ resource "kubernetes_service_v1" "spark_master" {
   }
 }
 
+# NodePort
 # Spark Master UI Service
 resource "kubernetes_service_v1" "spark_master_ui" {
   metadata {

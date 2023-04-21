@@ -17,9 +17,13 @@ provider "kubectl" {
   load_config_file = false
 }
 
-
 resource "kubernetes_namespace" "hadoop" {
+  depends_on = [local_file.dockerfile, local_file.jupyter_dockerfile, google_container_node_pool.hadoop_node_pool]
   metadata {
-    name = "hadoop"
+    name = google_container_cluster.hadoop.name
+  }
+
+  timeouts {
+    delete = "15m"
   }
 }

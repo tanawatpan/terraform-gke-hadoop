@@ -23,7 +23,7 @@ resource "kubernetes_deployment" "spark_master" {
       spec {
         container {
           name  = "spark-master"
-          image = "${local.image.name}:${local.image.tag}"
+          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
           env {
             name  = "NODE_TYPE"
@@ -61,6 +61,12 @@ resource "kubernetes_deployment" "spark_master" {
       }
     }
   }
+
+  lifecycle {
+    replace_triggered_by = [
+      local_file.dockerfile.id
+    ]
+  }
 }
 
 resource "kubernetes_deployment" "spark_worker" {
@@ -88,7 +94,7 @@ resource "kubernetes_deployment" "spark_worker" {
       spec {
         container {
           name  = "spark-worker"
-          image = "${local.image.name}:${local.image.tag}"
+          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
           env {
             name  = "NODE_TYPE"
@@ -107,6 +113,12 @@ resource "kubernetes_deployment" "spark_worker" {
         }
       }
     }
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      local_file.dockerfile.id
+    ]
   }
 }
 
@@ -135,7 +147,7 @@ resource "kubernetes_deployment" "spark_history" {
       spec {
         container {
           name  = "spark-history"
-          image = "${local.image.name}:${local.image.tag}"
+          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
           env {
             name  = "NODE_TYPE"
@@ -168,5 +180,11 @@ resource "kubernetes_deployment" "spark_history" {
         }
       }
     }
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      local_file.dockerfile.id
+    ]
   }
 }

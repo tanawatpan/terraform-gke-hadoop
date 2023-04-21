@@ -31,5 +31,6 @@ override.tf.json
 terraform.tfvars
 output
 hadoop
+jupyter
 plan
 .*

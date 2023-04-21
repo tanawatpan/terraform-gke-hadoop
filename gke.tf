@@ -42,6 +42,10 @@ resource "google_container_cluster" "hadoop" {
 
   enable_shielded_nodes = true
 
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${self.name}"
+  }
+
   timeouts {
     create = "30m"
     update = "40m"
@@ -53,7 +57,7 @@ resource "google_container_node_pool" "hadoop_node_pool" {
   name       = "hadoop-node-pool"
   cluster    = google_container_cluster.hadoop.name
   location   = var.zone
-  node_count = 3
+  node_count = 4
 
   node_config {
     preemptible  = true

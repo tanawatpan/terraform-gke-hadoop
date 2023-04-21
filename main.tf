@@ -46,10 +46,37 @@ provider "google" {
 }
 
 locals {
-  image = {
-    name = "gcr.io/${var.project}/hadoo-spark"
-    tag  = "0.1"
+
+  hadoop = {
+    user    = "hadoop"
+    version = "3.3.5"
+    image = {
+      name = "gcr.io/${var.project}/hadoop-spark"
+      tag  = "1.0"
+    }
   }
-  hadoop_version = "3.3.5"
-  spark_version  = "3.4.0"
+
+  spark = {
+    version = "3.4.0"
+  }
+
+  jupyter = {
+    image = {
+      name = "gcr.io/${var.project}/jupyter"
+      tag  = "1.0"
+    }
+    python_libraries = [
+      "numpy",
+      "pandas",
+      "matplotlib",
+      "seaborn",
+      "findspark",
+      "pymongo",
+    ]
+  }
+
+  external_jars = [
+    "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.12/gcs-connector-hadoop3-2.2.12-shaded.jar",
+    "https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.1.1/mongo-spark-connector_2.12-10.1.1-all.jar",
+  ]
 }

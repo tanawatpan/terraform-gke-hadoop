@@ -42,7 +42,7 @@ resource "kubernetes_stateful_set" "namenode" {
 
         container {
           name  = "namenode"
-          image = "${local.image.name}:${local.image.tag}"
+          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
           env {
             name  = "NODE_TYPE"
@@ -94,6 +94,12 @@ resource "kubernetes_stateful_set" "namenode" {
       }
     }
   }
+
+  lifecycle {
+    replace_triggered_by = [
+      local_file.dockerfile.id
+    ]
+  }
 }
 
 resource "kubernetes_stateful_set" "datanode" {
@@ -139,7 +145,7 @@ resource "kubernetes_stateful_set" "datanode" {
 
         container {
           name  = "datanode"
-          image = "${local.image.name}:${local.image.tag}"
+          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
           env {
             name  = "NODE_TYPE"
@@ -177,6 +183,12 @@ resource "kubernetes_stateful_set" "datanode" {
       }
     }
   }
+
+  lifecycle {
+    replace_triggered_by = [
+      local_file.dockerfile.id
+    ]
+  }
 }
 
 resource "kubernetes_stateful_set" "jupyter" {
@@ -212,39 +224,22 @@ resource "kubernetes_stateful_set" "jupyter" {
           command = [
             "/bin/sh",
             "-c",
-            "rm -rf /home/hadoop/lost+found && chown -R 1000:100 /home/hadoop",
+            "rm -rf /home/hadoop/jupyter/lost+found && chown -R 1000:1000 /home/hadoop/jupyter",
           ]
 
           volume_mount {
-            mount_path = "/home/hadoop"
+            mount_path = "/home/hadoop/jupyter"
             name       = "jupyter-notebook"
           }
         }
 
         container {
           name  = "jupyter"
-          image = "jupyter/pyspark-notebook:hadoop-3"
-
-          working_dir = "/home/hadoop"
-
-          security_context {
-            run_as_user  = 0
-            run_as_group = 0
-          }
+          image = "${local.jupyter.image.name}:${local.jupyter.image.tag}"
 
           env {
-            name  = "NB_USER"
-            value = "hadoop"
-          }
-
-          env {
-            name  = "CHOWN_HOME"
-            value = "yes"
-          }
-
-          env {
-            name  = "NOTEBOOK_ARGS"
-            value = "--NotebookApp.ip='0.0.0.0' --NotebookApp.port=8888 --NotebookApp.open_browser=False --NotebookApp.token='P@ssw0rd' --NotebookApp.allow_origin='*'"
+            name  = "NODE_TYPE"
+            value = "JUPYTER"
           }
 
           env {
@@ -272,7 +267,7 @@ resource "kubernetes_stateful_set" "jupyter" {
           }
 
           volume_mount {
-            mount_path = "/home/hadoop"
+            mount_path = "/home/hadoop/jupyter"
             name       = "jupyter-notebook"
           }
         }
@@ -296,5 +291,11 @@ resource "kubernetes_stateful_set" "jupyter" {
         storage_class_name = "standard-rwo"
       }
     }
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      local_file.jupyter_dockerfile.id
+    ]
   }
 }
