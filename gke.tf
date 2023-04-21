@@ -37,9 +37,19 @@ resource "google_container_cluster" "hadoop" {
   }
 
   release_channel {
-    channel = "REGULAR"
+    channel = "RAPID"
   }
 
+  workload_identity_config {
+    workload_pool = "${data.google_client_config.provider.project}.svc.id.goog"
+  }
+
+  network_policy {
+    provider = "PROVIDER_UNSPECIFIED" # CALICO provider overrides datapath_provider setting, leaving Dataplane v2 disabled
+    enabled  = false                  # Enabling NetworkPolicy for clusters with DatapathProvider=ADVANCED_DATAPATH is not allowed (yields error)
+  }
+
+  datapath_provider     = "ADVANCED_DATAPATH" # This is where Dataplane V2 is enabled.
   enable_shielded_nodes = true
 
   provisioner "local-exec" {

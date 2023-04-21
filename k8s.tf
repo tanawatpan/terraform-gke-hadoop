@@ -23,6 +23,12 @@ resource "kubernetes_namespace" "hadoop" {
     name = google_container_cluster.hadoop.name
   }
 
+  lifecycle {
+    replace_triggered_by = [
+      google_container_cluster.hadoop.id
+    ]
+  }
+
   timeouts {
     delete = "15m"
   }
