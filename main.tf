@@ -39,13 +39,8 @@ variable "web_domain" {
   }
 }
 
-provider "google" {
-  project = var.project
-  region  = var.region
-  zone    = var.zone
-}
-
 locals {
+  cluster_name = "hadoop"
 
   hadoop = {
     user    = "hadoop"
@@ -75,8 +70,16 @@ locals {
     ]
   }
 
-  external_jars = [
-    "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.12/gcs-connector-hadoop3-2.2.12-shaded.jar",
-    "https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.1.1/mongo-spark-connector_2.12-10.1.1-all.jar",
-  ]
+  drill = {
+    image = {
+      name = "apache/drill"
+      tag  = "latest-openjdk-11"
+    }
+    mongodb_driver_version = "4.4.2"
+  }
+
+  external_jars = {
+    gcs_connector         = "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.12/gcs-connector-hadoop3-2.2.12-shaded.jar",
+    mongo_spark_connector = "https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.1.1/mongo-spark-connector_2.12-10.1.1-all.jar",
+  }
 }

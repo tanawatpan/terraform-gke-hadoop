@@ -1,5 +1,5 @@
 resource "google_container_cluster" "hadoop" {
-  name            = "hadoop"
+  name            = local.cluster_name
   location        = var.zone
   network         = google_compute_network.hadoop_gke.self_link
   subnetwork      = google_compute_subnetwork.hadoop_gke.self_link
@@ -41,7 +41,7 @@ resource "google_container_cluster" "hadoop" {
   }
 
   workload_identity_config {
-    workload_pool = "${data.google_client_config.provider.project}.svc.id.goog"
+    workload_pool = null
   }
 
   network_policy {
@@ -97,5 +97,11 @@ resource "google_container_node_pool" "hadoop_node_pool" {
   upgrade_settings {
     max_surge       = 1
     max_unavailable = 0
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      google_container_cluster.hadoop.id
+    ]
   }
 }

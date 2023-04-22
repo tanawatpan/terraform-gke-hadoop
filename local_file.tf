@@ -1,4 +1,3 @@
-
 resource "tls_private_key" "ssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -300,7 +299,7 @@ resource "local_file" "dockerfile" {
 		COPY ${basename(local_file.public_key.filename)} /tmp/${basename(local_file.public_key.filename)}
 		COPY ${basename(local_file.private_key.filename)}  /tmp/${basename(local_file.private_key.filename)}
 
-		ENV EXTERNAL_JARS="${join(" ", local.external_jars)}"
+		ENV EXTERNAL_JARS="${join(" ", [for lib, url in local.external_jars : url])}"
 
 		COPY ${basename(local_file.setup.filename)} /tmp/${basename(local_file.setup.filename)}
 		RUN chmod +x /tmp/${basename(local_file.setup.filename)}

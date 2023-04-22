@@ -1,3 +1,75 @@
+resource "kubernetes_service_v1" "spark_master" {
+  metadata {
+    name      = "spark-master"
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
+  }
+
+  spec {
+    port {
+      port        = 7077
+      target_port = 7077
+    }
+
+    selector = {
+      app = "spark-master"
+    }
+  }
+}
+
+# Spark Master UI Service
+resource "kubernetes_service_v1" "spark_master_ui" {
+  metadata {
+    name      = "spark-master-ui"
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
+  }
+
+  spec {
+    type = "NodePort"
+
+    port {
+      port        = 8080
+      target_port = 8080
+    }
+
+    selector = {
+      app = "spark-master"
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
+  }
+}
+
+# Spark History Service
+resource "kubernetes_service_v1" "spark_history" {
+  metadata {
+    name      = "spark-history"
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
+  }
+
+  spec {
+    type = "NodePort"
+
+    port {
+      port        = 18080
+      target_port = 18080
+    }
+
+    selector = {
+      app = "spark-history"
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
+  }
+}
+
 resource "kubernetes_deployment" "spark_master" {
   metadata {
     name      = "spark-master"
