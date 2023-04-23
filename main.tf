@@ -39,6 +39,12 @@ variable "web_domain" {
   }
 }
 
+variable "superset_password" {
+  type        = string
+  sensitive   = true
+  description = "Superset admin password"
+}
+
 locals {
   cluster_name = "hadoop"
 
