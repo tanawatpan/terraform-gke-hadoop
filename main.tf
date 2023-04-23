@@ -71,9 +71,17 @@ locals {
   }
 
   drill = {
+    name     = "drill"
+    replicas = 2
     image = {
       name = "apache/drill"
       tag  = "latest-openjdk-11"
+    }
+    zookeeper = {
+      port           = 2181
+      home           = "/opt/zookeeper"
+      data_directory = "/var/lib/zookeeper"
+      package_url    = "https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.7.1-bin.tar.gz"
     }
     mongodb_driver_version = "4.4.2"
   }

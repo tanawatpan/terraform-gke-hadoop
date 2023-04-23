@@ -39,14 +39,29 @@ resource "kubernetes_service" "drill_service" {
   }
 }
 
-resource "kubernetes_deployment" "drill" {
+resource "kubernetes_service" "drills" {
   metadata {
-    name      = "drill"
+    name      = "drills"
     namespace = kubernetes_namespace.drill.metadata.0.name
   }
 
   spec {
-    replicas = 1
+    selector = {
+      app = "drill"
+    }
+    cluster_ip = "None"
+  }
+}
+
+resource "kubernetes_stateful_set" "drill" {
+  metadata {
+    name      = local.drill.name
+    namespace = kubernetes_namespace.drill.metadata.0.name
+  }
+
+  spec {
+    service_name = "drills"
+    replicas     = local.drill.replicas
 
     selector {
       match_labels = {
@@ -63,17 +78,58 @@ resource "kubernetes_deployment" "drill" {
 
       spec {
         container {
-          name  = "drill"
+          name  = local.drill.name
           image = "${local.drill.image.name}:${local.drill.image.tag}"
 
           security_context {
             run_as_user = 0
           }
 
+          env {
+            name  = "ZOO_KEEPER_URL"
+            value = local.drill.zookeeper.package_url
+          }
+          env {
+            name  = "ZOO_DATA_DIR"
+            value = local.drill.zookeeper.data_directory
+          }
+          env {
+            name  = "ZOO_HOME"
+            value = local.drill.zookeeper.home
+          }
+          env {
+            name  = "REPLICAS"
+            value = local.drill.replicas
+          }
+
           command = ["/bin/bash", "-c"]
-          args = [<<EOT
+          args = [<<-EOT
 				set -e
 				set -x
+
+				wget -P /tmp $ZOO_KEEPER_URL
+				tar -xzf /tmp/$(basename $ZOO_KEEPER_URL) -C /tmp 
+				mv -f /tmp/$(basename $ZOO_KEEPER_URL .tar.gz) $ZOO_HOME
+
+				cp $ZOO_HOME/conf/zoo_sample.cfg $ZOO_HOME/conf/zoo.cfg
+				sed -i "s|^dataDir=.*$|dataDir=$${ZOO_DATA_DIR}|" $ZOO_HOME/conf/zoo.cfg 
+				sed -i "s|^clientPort=.*$|clientPort=${local.drill.zookeeper.port}|" $ZOO_HOME/conf/zoo.cfg 
+				echo "clientPortAddress=0.0.0.0" >> $ZOO_HOME/conf/zoo.cfg
+
+				for ((i=0;i<$REPLICAS;i++)); do
+				    echo "server.$i=${local.drill.name}-$i.${kubernetes_service.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:2888:3888" >> $ZOO_HOME/conf/zoo.cfg
+				    NODES+="${local.drill.name}-$i.${kubernetes_service.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:${local.drill.zookeeper.port},"
+				done
+
+				POD_NAME=$(hostname)
+				mkdir -p $${ZOO_DATA_DIR}
+				echo $${POD_NAME##*-} > $${ZOO_DATA_DIR}/myid
+
+				$ZOO_HOME/bin/zkServer.sh start
+
+				NODES=$${NODES:0:-1}
+				sed -i "s/\(zk.connect:\).*/\1 \"$NODES\"/" $$DRILL_HOME/conf/drill-override.conf
+
 				cat > $DRILL_HOME/conf/storage-plugins-override.conf <<-EOL
 					"storage": {
 					  dfs: {
@@ -244,6 +300,7 @@ resource "kubernetes_deployment" "drill" {
 					  }
 					}
 				EOL
+
 				cat > $DRILL_HOME/conf/core-site.xml <<-EOL
 					<configuration>
 					  <property>
@@ -256,11 +313,14 @@ resource "kubernetes_deployment" "drill" {
 					  </property>
 					</configuration>
 				EOL
+
 				rm -f $DRILL_HOME/jars/3rdparty/mongodb-driver-*.jar
 				wget -P $DRILL_HOME/jars/3rdparty https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/${local.drill.mongodb_driver_version}/mongodb-driver-sync-${local.drill.mongodb_driver_version}.jar
 				wget -P $DRILL_HOME/jars/3rdparty https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/${local.drill.mongodb_driver_version}/mongodb-driver-core-${local.drill.mongodb_driver_version}.jar
 				wget -P $DRILL_HOME/jars/3rdparty ${local.external_jars.gcs_connector} 
-				$DRILL_HOME/bin/drill-embedded
+
+				$DRILL_HOME/bin/drillbit.sh start
+				$DRILL_HOME/bin/sqlline
 			EOT
           ]
 
