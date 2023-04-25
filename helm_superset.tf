@@ -1,4 +1,4 @@
-data "http" "values_yaml" {
+data "http" "superset_values_yaml" {
   url = "https://raw.githubusercontent.com/apache/superset/master/helm/superset/values.yaml"
 }
 
@@ -9,7 +9,7 @@ resource "helm_release" "superset" {
   namespace        = "superset"
   create_namespace = true
 
-  values = [data.http.values_yaml.response_body]
+  values = [data.http.superset_values_yaml.response_body]
 
   set {
     name  = "bootstrapScript"
