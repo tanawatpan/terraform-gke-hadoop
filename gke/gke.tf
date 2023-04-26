@@ -1,8 +1,8 @@
-resource "google_container_cluster" "hadoop" {
+resource "google_container_cluster" "cluster" {
   name            = local.cluster_name
   location        = var.zone
-  network         = google_compute_network.hadoop_gke.self_link
-  subnetwork      = google_compute_subnetwork.hadoop_gke.self_link
+  network         = google_compute_network.vpc.self_link
+  subnetwork      = google_compute_subnetwork.subnet.self_link
   networking_mode = "VPC_NATIVE"
 
   initial_node_count       = 1
@@ -41,7 +41,7 @@ resource "google_container_cluster" "hadoop" {
   }
 
   workload_identity_config {
-    workload_pool = null
+    workload_pool = null # Disable workload identity
   }
 
   network_policy {
@@ -52,26 +52,26 @@ resource "google_container_cluster" "hadoop" {
   datapath_provider     = "ADVANCED_DATAPATH" # This is where Dataplane V2 is enabled.
   enable_shielded_nodes = true
 
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials ${self.name}"
-  }
-
   timeouts {
     create = "30m"
     update = "40m"
     delete = "30m"
   }
+
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials ${self.name} --project ${var.project} --zone ${var.zone}"
+  }
 }
 
-resource "google_container_node_pool" "hadoop_node_pool" {
-  name       = "hadoop-node-pool"
-  cluster    = google_container_cluster.hadoop.name
+resource "google_container_node_pool" "t2d_node_pool" {
+  name       = "t2d-node-pool"
+  cluster    = google_container_cluster.cluster.name
   location   = var.zone
   node_count = 4
 
   node_config {
     preemptible  = true
-    machine_type = "n1-standard-2"
+    machine_type = "t2d-standard-2"
     disk_size_gb = 20
     disk_type    = "pd-balanced"
 
@@ -101,7 +101,50 @@ resource "google_container_node_pool" "hadoop_node_pool" {
 
   lifecycle {
     replace_triggered_by = [
-      google_container_cluster.hadoop.id
+      google_container_cluster.cluster.id
+    ]
+  }
+}
+
+resource "google_container_node_pool" "e2_medium_node_pool" {
+  name       = "e2-medium-node-pool"
+  cluster    = google_container_cluster.cluster.name
+  location   = var.zone
+  node_count = 2
+
+  node_config {
+    preemptible  = true
+    machine_type = "e2-medium"
+    disk_size_gb = 20
+    disk_type    = "pd-standard"
+
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/devstorage.read_write",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/servicecontrol",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/trace.append",
+    ]
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
+
+  upgrade_settings {
+    max_surge       = 1
+    max_unavailable = 0
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      google_container_cluster.cluster.id
     ]
   }
 }

@@ -1,13 +1,6 @@
 resource "kubernetes_namespace" "hadoop" {
-  depends_on = [local_file.dockerfile, local_file.jupyter_dockerfile, google_container_node_pool.hadoop_node_pool]
   metadata {
-    name = data.google_container_cluster.hadoop.name
-  }
-
-  lifecycle {
-    replace_triggered_by = [
-      google_container_cluster.hadoop.id
-    ]
+    name = "hadoop"
   }
 
   timeouts {
@@ -155,12 +148,6 @@ resource "kubernetes_stateful_set" "namenode" {
       }
     }
   }
-
-  lifecycle {
-    replace_triggered_by = [
-      local_file.dockerfile.id
-    ]
-  }
 }
 
 resource "kubernetes_stateful_set" "datanode" {
@@ -243,11 +230,5 @@ resource "kubernetes_stateful_set" "datanode" {
         storage_class_name = "standard-rwo"
       }
     }
-  }
-
-  lifecycle {
-    replace_triggered_by = [
-      local_file.dockerfile.id
-    ]
   }
 }

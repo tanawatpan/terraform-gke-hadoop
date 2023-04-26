@@ -25,7 +25,6 @@ resource "kubernetes_service_v1" "jupyter" {
 }
 
 resource "kubernetes_stateful_set" "jupyter" {
-  depends_on = [google_compute_router_nat.nat]
   metadata {
     name      = "jupyter"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -124,11 +123,5 @@ resource "kubernetes_stateful_set" "jupyter" {
         storage_class_name = "standard-rwo"
       }
     }
-  }
-
-  lifecycle {
-    replace_triggered_by = [
-      local_file.jupyter_dockerfile.id
-    ]
   }
 }

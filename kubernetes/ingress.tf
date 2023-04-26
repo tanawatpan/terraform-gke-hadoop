@@ -1,3 +1,9 @@
+resource "google_compute_global_address" "lb_ip" {
+  name         = "lb-ip"
+  address_type = "EXTERNAL"
+  ip_version   = "IPV4"
+}
+
 resource "kubectl_manifest" "frontend_https_redirect" {
   yaml_body = yamlencode({
     apiVersion = "networking.gke.io/v1beta1"
@@ -22,7 +28,7 @@ resource "kubernetes_ingress_v1" "hadoop_ingress" {
     namespace = kubernetes_namespace.hadoop.metadata.0.name
     annotations = {
       "kubernetes.io/ingress.global-static-ip-name" = google_compute_global_address.lb_ip.name
-      "ingress.gcp.kubernetes.io/pre-shared-cert"   = google_compute_managed_ssl_certificate.hadoop_ssl_certificate.name
+      "ingress.gcp.kubernetes.io/pre-shared-cert"   = google_compute_managed_ssl_certificate.ssl_certificate.name
       "networking.gke.io/v1beta1.FrontendConfig"    = kubectl_manifest.frontend_https_redirect.name
       # "kubernetes.io/ingress.allow-http"            = "false"
     }
@@ -91,6 +97,22 @@ resource "kubernetes_ingress_v1" "hadoop_ingress" {
               name = kubernetes_service_v1.jupyter.metadata.0.name
               port {
                 number = kubernetes_service_v1.jupyter.spec.0.port.0.target_port
+              }
+            }
+          }
+        }
+      }
+    }
+
+    rule {
+      host = trimsuffix(google_dns_record_set.superset.name, ".")
+      http {
+        path {
+          backend {
+            service {
+              name = helm_release.superset.metadata.0.name
+              port {
+                number = "8088"
               }
             }
           }

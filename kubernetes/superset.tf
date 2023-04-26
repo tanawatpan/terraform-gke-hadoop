@@ -6,7 +6,7 @@ resource "helm_release" "superset" {
   name             = "superset"
   repository       = "http://apache.github.io/superset"
   chart            = "superset"
-  namespace        = "superset"
+  namespace        = kubernetes_namespace.hadoop.metadata.0.name
   create_namespace = true
 
   values = [data.http.superset_values_yaml.response_body]
@@ -18,6 +18,11 @@ resource "helm_release" "superset" {
 		pip3 install pyodbc JPype1
 		pip3 install sqlalchemy-drill
 	EOT
+  }
+
+  set {
+    name  = "service.type"
+    value = "NodePort"
   }
 
   set_sensitive {

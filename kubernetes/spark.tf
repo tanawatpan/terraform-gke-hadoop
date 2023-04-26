@@ -133,12 +133,6 @@ resource "kubernetes_deployment" "spark_master" {
       }
     }
   }
-
-  lifecycle {
-    replace_triggered_by = [
-      local_file.dockerfile.id
-    ]
-  }
 }
 
 resource "kubernetes_deployment" "spark_worker" {
@@ -185,12 +179,6 @@ resource "kubernetes_deployment" "spark_worker" {
         }
       }
     }
-  }
-
-  lifecycle {
-    replace_triggered_by = [
-      local_file.dockerfile.id
-    ]
   }
 }
 
@@ -252,11 +240,5 @@ resource "kubernetes_deployment" "spark_history" {
         }
       }
     }
-  }
-
-  lifecycle {
-    replace_triggered_by = [
-      local_file.dockerfile.id
-    ]
   }
 }
