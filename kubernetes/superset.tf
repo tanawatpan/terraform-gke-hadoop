@@ -16,12 +16,12 @@ resource "helm_release" "superset" {
     value = <<-EOT
 		#!/bin/bash
 		pip3 install pyodbc JPype1
-		pip3 install sqlalchemy-drill
+		pip3 install sqlalchemy-drill sqlalchemy-trino
 	EOT
   }
 
   set {
-    name  = "service.type"
+    name  = "service\\.type"
     value = "NodePort"
   }
 
