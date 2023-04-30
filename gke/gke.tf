@@ -72,7 +72,7 @@ resource "google_container_node_pool" "t2d_node_pool" {
   node_config {
     preemptible  = true
     machine_type = "t2d-standard-2"
-    disk_size_gb = 20
+    disk_size_gb = 30
     disk_type    = "pd-balanced"
 
     metadata = {
@@ -95,7 +95,7 @@ resource "google_container_node_pool" "t2d_node_pool" {
   }
 
   upgrade_settings {
-    max_surge       = 1
+    max_surge       = 0
     max_unavailable = 0
   }
 
@@ -110,13 +110,13 @@ resource "google_container_node_pool" "e2_medium_node_pool" {
   name       = "e2-medium-node-pool"
   cluster    = google_container_cluster.cluster.name
   location   = var.zone
-  node_count = 2
+  node_count = 3
 
   node_config {
     preemptible  = true
     machine_type = "e2-medium"
-    disk_size_gb = 20
-    disk_type    = "pd-standard"
+    disk_size_gb = 30
+    disk_type    = "pd-balanced"
 
     metadata = {
       disable-legacy-endpoints = "true"

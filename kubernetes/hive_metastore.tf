@@ -21,6 +21,12 @@ resource "kubernetes_service_v1" "hive_metastore" {
       app = "hive-metastore"
     }
   }
+
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
+  }
 }
 
 resource "kubernetes_service_v1" "hive_metastore_mysql" {
@@ -38,6 +44,12 @@ resource "kubernetes_service_v1" "hive_metastore_mysql" {
     selector = {
       app = "hive-metastore-mysql"
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
   }
 }
 
@@ -70,12 +82,12 @@ resource "kubernetes_deployment" "hive_metastore" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
             name  = "HIVE_WAREHOUSE"
-            value = "/user/hive/warehouse"
+            value = "user/hive/warehouse"
           }
 
           env {

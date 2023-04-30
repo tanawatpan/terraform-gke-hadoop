@@ -7,7 +7,7 @@ resource "local_file" "hive_metastore_entrypoint" {
 		set -x
 
 		function create_property() {
-		    cat <<-EOL
+			cat <<-EOL
 			    <property>
 			        <name>$1</name>
 			        <value>$2</value>
@@ -20,7 +20,7 @@ resource "local_file" "hive_metastore_entrypoint" {
 				<configuration>
 					$(create_property metastore.thrift.uris         thrift://0.0.0.0:9083 )
 					$(create_property fs.defaultFS                  hdfs://$${NAMENODE_HOSTNAME}:9000 )
-					$(create_property metastore.warehouse.dir       hdfs://$${NAMENODE_HOSTNAME}:9000/$${HIVE_WAREHOUSE} )
+					$(create_property metastore.warehouse.dir       hdfs://$${NAMENODE_HOSTNAME}:9000/$${HIVE_WAREHOUSE:=/user/hive/warehouse} )
 					$(create_property metastore.task.threads.always org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask )
 					$(create_property metastore.expression.proxy    org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy )
 		
@@ -43,8 +43,10 @@ resource "local_file" "hive_metastore_entrypoint" {
 		function create_hadoop_core_configuration() {
 			cat > $HADOOP_HOME/etc/hadoop/core-site.xml <<-EOF
 				<configuration>
-					$(create_property fs.defaultFS 					hdfs://$${NAMENODE_HOSTNAME}:9000 )
-					$(create_property fs.AbstractFileSystem.gs.impl	com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS )
+					$(create_property fs.defaultFS					hdfs://$NAMENODE_HOSTNAME:9000 )
+					$(create_property fs.AbstractFileSystem.gs.impl com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS )
+					$(create_property hadoop.proxyuser.hue.hosts	"*" )
+					$(create_property hadoop.proxyuser.hue.groups	"*" )
 				</configuration>
 			EOF
 		}
@@ -106,7 +108,9 @@ resource "local_file" "hive_metastore_dockerfile" {
 
   provisioner "local-exec" {
     command = <<-EOT
-		docker build -t ${basename(local.hive_metastore.image.name)}:${local.hive_metastore.image.tag} ${dirname(self.filename)}
+		set -x
+		set -e
+		docker build --platform linux/amd64 -t ${basename(local.hive_metastore.image.name)}:${local.hive_metastore.image.tag} ${dirname(self.filename)}
 		docker tag ${basename(local.hive_metastore.image.name)}:${local.hive_metastore.image.tag} ${local.hive_metastore.image.name}:${local.hive_metastore.image.tag}
 		docker push ${local.hive_metastore.image.name}:${local.hive_metastore.image.tag}
 	EOT

@@ -70,7 +70,8 @@ resource "local_file" "jupyter_dockerfile" {
   provisioner "local-exec" {
     command = <<-EOT
 		set -x
-		docker build -t ${basename(local.jupyter.image.name)}:${local.jupyter.image.tag} ${dirname(self.filename)}
+		set -e
+		docker build --platform linux/amd64 -t ${basename(local.jupyter.image.name)}:${local.jupyter.image.tag} ${dirname(self.filename)}
 		docker tag ${basename(local.jupyter.image.name)}:${local.jupyter.image.tag} ${local.jupyter.image.name}:${local.jupyter.image.tag}
 		docker push ${local.jupyter.image.name}:${local.jupyter.image.tag}
 	EOT

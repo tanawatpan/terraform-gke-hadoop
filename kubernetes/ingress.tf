@@ -119,5 +119,21 @@ resource "kubernetes_ingress_v1" "hadoop_ingress" {
         }
       }
     }
+
+    rule {
+      host = trimsuffix(google_dns_record_set.hue.name, ".")
+      http {
+        path {
+          backend {
+            service {
+              name = helm_release.hue.metadata.0.name
+              port {
+                number = "8888"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

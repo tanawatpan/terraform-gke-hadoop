@@ -4,7 +4,7 @@ resource "kubernetes_namespace" "drill" {
   }
 }
 
-resource "kubernetes_service" "drill_service" {
+resource "kubernetes_service_v1" "drill_service" {
   metadata {
     name      = "drill-service"
     namespace = kubernetes_namespace.drill.metadata.0.name
@@ -50,6 +50,12 @@ resource "kubernetes_service" "drills" {
       app = "drill"
     }
     cluster_ip = "None"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
   }
 }
 
@@ -134,7 +140,7 @@ resource "kubernetes_stateful_set" "drill" {
 					"storage": {
 					  dfs: {
 					    type : "file",
-					    connection : "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}",
+					    connection : "hdfs://namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9000",
 					    workspaces : {
 					      "tmp" : {
 					        "location" : "/tmp",
@@ -296,7 +302,7 @@ resource "kubernetes_stateful_set" "drill" {
 					      "lastRow" : 1048576
 					    }
 					    },
-					    enabled: true
+					    enabled: false
 					  }
 					}
 				EOL
@@ -319,7 +325,15 @@ resource "kubernetes_stateful_set" "drill" {
 				wget -P $DRILL_HOME/jars/3rdparty https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/${local.drill.mongodb_driver_version}/mongodb-driver-core-${local.drill.mongodb_driver_version}.jar
 				wget -P $DRILL_HOME/jars/3rdparty ${local.external_jars.gcs_connector} 
 
-				$DRILL_HOME/bin/drillbit.sh start
+				$DRILL_HOME/bin/drillbit.sh start && sleep 45
+
+				if curl --max-time 15 -s localhost:${kubernetes_service_v1.drill_service.spec.0.port.0.target_port} >/dev/null; then
+					echo "Apache Drill is accessible at port ${kubernetes_service_v1.drill_service.spec.0.port.0.target_port}"
+				else
+					echo "Error: Apache Drill is not accessible at port ${kubernetes_service_v1.drill_service.spec.0.port.0.target_port}"
+					exit 1
+				fi
+
 				$DRILL_HOME/bin/sqlline
 			EOT
           ]

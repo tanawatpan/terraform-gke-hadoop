@@ -61,7 +61,7 @@ locals {
   hadoop = {
     image = {
       name = "gcr.io/${var.project}/hadoop-spark"
-      tag  = "1.0"
+      tag  = "1.1.0"
     }
   }
 
@@ -93,6 +93,13 @@ locals {
       package_url    = "https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.7.1-bin.tar.gz"
     }
     mongodb_driver_version = "4.4.2"
+  }
+
+  hue = {
+    image = {
+      name = "gcr.io/${var.project}/hue"
+      tag  = "4.11.0"
+    }
   }
 
   external_jars = {

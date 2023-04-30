@@ -76,12 +76,22 @@ resource "kubernetes_stateful_set" "jupyter" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = kubernetes_service_v1.namenode.metadata.0.name
+            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
             value = kubernetes_service_v1.spark_master.metadata.0.name
+          }
+
+          env {
+            name  = "HIVE_METASTORE_HOSTNAME"
+            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local"
+          }
+
+          env {
+            name  = "HIVE_WAREHOUSE"
+            value = "user/hive/warehouse"
           }
 
           port {

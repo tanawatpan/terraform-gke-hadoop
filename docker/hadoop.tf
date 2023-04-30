@@ -98,6 +98,15 @@ resource "local_file" "entrypoint" {
 		NODE_TYPE=$${NODE_TYPE^^}
 		echo "NODE_TYPE: $NODE_TYPE"
 
+		function create_property() {
+			cat <<-EOL
+			    <property>
+			        <name>$1</name>
+			        <value>$2</value>
+			    </property>
+			EOL
+		}
+
 		function config_hadoop {
 			echo "$SECONDARY_NAMENODE_HOSTNAME" >> $HADOOP_HOME/etc/hadoop/masters
 
@@ -112,36 +121,23 @@ resource "local_file" "entrypoint" {
 			# Update core-site.xml
 			cat > $HADOOP_HOME/etc/hadoop/core-site.xml <<-EOL
 				<configuration>
-				    <property>
-				        <name>fs.defaultFS</name>
-				        <value>hdfs://$NAMENODE_HOSTNAME:9000</value>
-				    </property>
-				    <property>
-				        <name>fs.AbstractFileSystem.gs.impl</name>
-				        <value>com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS</value>
-				    </property>
+					$(create_property fs.defaultFS					hdfs://$NAMENODE_HOSTNAME:9000 )
+					$(create_property fs.AbstractFileSystem.gs.impl com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS )
+					$(create_property hadoop.proxyuser.hue.hosts	"*" )
+					$(create_property hadoop.proxyuser.hue.groups	"*" )
+					$(create_property hadoop.proxyuser.trino.hosts	"*" )
+					$(create_property hadoop.proxyuser.trino.groups	"*" )
 				</configuration>
 			EOL
 
 			# Update hdfs-site.xml
 			cat > $HADOOP_HOME/etc/hadoop/hdfs-site.xml <<-EOL
 				<configuration>
-				    <property>
-				        <name>dfs.replication</name>
-				        <value>2</value>
-				    </property>
-				    <property>
-				        <name>dfs.namenode.name.dir</name>
-				        <value>file:///data</value>
-				    </property>
-				    <property>
-				        <name>dfs.datanode.data.dir</name>
-				        <value>file:///data</value>
-				    </property>
-				    <property>
-				        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
-				        <value>false</value>
-				    </property>
+					$(create_property dfs.replication 										2 )
+					$(create_property dfs.namenode.name.dir 								file:///data )
+					$(create_property dfs.datanode.data.dir 								file:///data )
+					$(create_property dfs.namenode.datanode.registration.ip-hostname-check	false )
+					$(create_property dfs.webhdfs.enabled 									true )
 				</configuration>
 			EOL
 		}
@@ -155,7 +151,6 @@ resource "local_file" "entrypoint" {
 				export SPARK_MASTER_PORT=7077
 				export SPARK_MASTER_WEBUI_PORT=8080
 				export SPARK_WORKER_CORES=$${SPARK_WORKER_CORES:=1}
-				export SPARK_EXECUTOR_INSTANCES=$${SPARK_EXECUTOR_INSTANCES:=1}
 
 				export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:\\\$LD_LIBRARY_PATH
 			EOL
@@ -165,6 +160,7 @@ resource "local_file" "entrypoint" {
 				spark.master             spark://$SPARK_MASTER_HOSTNAME:7077
 				spark.driver.cores       $${SPARK_DRIVER_CORES:=1}
 				spark.driver.memory      $${SPARK_DRIVER_MEMORY:=512m}
+				spark.cores.max          $${SPARK_CORE_MAX:=4}
 				spark.executor.cores     $${SPARK_EXECUTOR_CORES:=1}
 				spark.executor.memory    $${SPARK_EXECUTOR_MEMORY:=2g}
 				spark.executor.instances $${SPARK_EXECUTOR_INSTANCES:=1}
@@ -176,8 +172,17 @@ resource "local_file" "entrypoint" {
 				spark.history.fs.logDirectory   $${SPARK_LOG_DIR:=hdfs:/spark-events}
 
 				spark.hadoop.fs.defaultFS                   hdfs://$NAMENODE_HOSTNAME:9000
+				spark.sql.warehouse.dir                     hdfs://$${NAMENODE_HOSTNAME}:9000/$${HIVE_WAREHOUSE:=/user/hive/warehouse}
 				spark.hadoop.fs.hdfs.impl                   org.apache.hadoop.hdfs.DistributedFileSystem
 				spark.hadoop.fs.AbstractFileSystem.gs.impl  com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS
+
+				spark.sql.catalogImplementation  hive
+				spark.hadoop.hive.metastore.uris thrift://$${HIVE_METASTORE_HOSTNAME}:9083
+
+				spark.dynamicAllocation.enabled             true
+				spark.dynamicAllocation.initialExecutors    $${SPARK_INITIAL_EXECUTORS:=1}
+				spark.dynamicAllocation.maxExecutors        $${SPARK_MAX_EXECUTORS:=2}
+				spark.dynamicAllocation.executorIdleTimeout $${SPARK_EXECUTOR_IDLE_TIMEOUT:=60s}
 			EOL
 		}
 
@@ -192,6 +197,13 @@ resource "local_file" "entrypoint" {
 			elif [ "$NODE_TYPE" == "SPARK_MASTER" ]; then
 			    SPARK_NO_DAEMONIZE=true $SPARK_HOME/sbin/start-master.sh
 
+			elif [ "$NODE_TYPE" == "SPARK_THRIFT" ]; then
+			    echo "spark.driver.host $(hostname -i)" >> $SPARK_HOME/conf/spark-defaults.conf
+			    SPARK_NO_DAEMONIZE=true $SPARK_HOME/sbin/start-thriftserver.sh \
+			        --hiveconf hive.server2.thrift.bind.host=0.0.0.0 \
+			        --hiveconf hive.server2.thrift.port=10000 \
+			        --master spark://$SPARK_MASTER_HOSTNAME:7077
+
 			elif [ "$NODE_TYPE" == "SPARK_WORKER" ]; then
 			    SPARK_NO_DAEMONIZE=true $SPARK_HOME/sbin/start-worker.sh spark://$SPARK_MASTER_HOSTNAME:7077
 
@@ -204,7 +216,7 @@ resource "local_file" "entrypoint" {
 			    $PYTHON_VENV_PATH/bin/jupyter lab --no-browser --config=/home/$HADOOP_USER/.jupyter/jupyter_notebook_config.py --notebook-dir=/home/$HADOOP_USER/jupyter
 
 			else
-			    echo "Error: NODE_TYPE must be set to 'NAMENODE', 'DATANODE', 'SPARK_MASTER', 'SPARK_WORKER', 'SPARK_HISTORY' or 'JUPYTER'"
+			    echo "Error: NODE_TYPE must be set to 'NAMENODE', 'DATANODE', 'SPARK_MASTER', 'SPARK_THRIFT', 'SPARK_WORKER', 'SPARK_HISTORY' or 'JUPYTER'"
 			    exit 1
 
 			fi
@@ -264,7 +276,8 @@ resource "local_file" "hadoop_dockerfile" {
     # gcloud builds submit --tag ${local.hadoop.image.name}:${local.hadoop.image.tag} hadoop/ 
     command = <<-EOT
 		set -x
-		docker build -t ${basename(local.hadoop.image.name)}:${local.hadoop.image.tag} ${dirname(self.filename)}
+		set -e
+		docker build --platform linux/amd64 -t ${basename(local.hadoop.image.name)}:${local.hadoop.image.tag} ${dirname(self.filename)}
 		docker tag ${basename(local.hadoop.image.name)}:${local.hadoop.image.tag} ${local.hadoop.image.name}:${local.hadoop.image.tag}
 		docker push ${local.hadoop.image.name}:${local.hadoop.image.tag}
 	EOT

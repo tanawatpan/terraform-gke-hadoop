@@ -20,7 +20,7 @@ locals {
     version = "3.3.5"
     image = {
       name = "gcr.io/${var.project}/hadoop-spark"
-      tag  = "1.0"
+      tag  = "1.1.0"
     }
   }
 
@@ -48,6 +48,13 @@ locals {
     image = {
       name = "gcr.io/${var.project}/hive-metastore"
       tag  = "1.0"
+    }
+  }
+
+  hue = {
+    image = {
+      name = "gcr.io/${var.project}/hue"
+      tag  = "4.11.0"
     }
   }
 
