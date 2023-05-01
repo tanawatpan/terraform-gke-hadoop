@@ -40,7 +40,7 @@ resource "helm_release" "hue" {
 		[[[presto]]]
 		name = Trino Hive
 		interface=sqlalchemy
-		options='{"url": "trino://trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"}'
+		options='{"url": "trino://hadoop@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"}'
 
 		[[[sparksql]]]
 		name=Spark SQL

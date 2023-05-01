@@ -15,6 +15,7 @@ resource "helm_release" "trino" {
 		additionalCatalogs:
 		  hive: |-
 		    connector.name=hive
+		    hive.hdfs.impersonation.enabled=true
 		    hive.metastore.uri=thrift://${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}
 	EOL
   ]
