@@ -15,8 +15,17 @@ resource "helm_release" "trino" {
 		additionalCatalogs:
 		  hive: |-
 		    connector.name=hive
+        hive.metastore.username=hadoop
 		    hive.hdfs.impersonation.enabled=true
-		    hive.metastore.uri=thrift://${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}
+		    hive.auto-purge=true
+		    hive.allow-drop-table=true
+		    hive.allow-rename-table=true
+		    hive.allow-add-column=true
+		    hive.allow-drop-column=true
+		    hive.allow-rename-column=true
+		    hive.metastore.thrift.delete-files-on-drop=true
+        hive.storage-format=PARQUET
+		    hive.metastore.uri=thrift://hadoop@${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}
 	EOL
   ]
 

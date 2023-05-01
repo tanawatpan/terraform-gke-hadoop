@@ -47,6 +47,8 @@ resource "local_file" "hive_metastore_entrypoint" {
 					$(create_property fs.AbstractFileSystem.gs.impl com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS )
 					$(create_property hadoop.proxyuser.hue.hosts	"*" )
 					$(create_property hadoop.proxyuser.hue.groups	"*" )
+					$(create_property hadoop.proxyuser.trino.hosts	"*" )
+					$(create_property hadoop.proxyuser.trino.groups	"*" )
 				</configuration>
 			EOF
 		}
