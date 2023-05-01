@@ -24,7 +24,7 @@ resource "helm_release" "trino" {
 		    hive.allow-drop-column=true
 		    hive.allow-rename-column=true
 		    hive.metastore.thrift.delete-files-on-drop=true
-        hive.storage-format=PARQUET
+		    hive.storage-format=PARQUET
 		    hive.metastore.uri=thrift://hadoop@${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}
 	EOL
   ]
