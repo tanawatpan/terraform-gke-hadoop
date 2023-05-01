@@ -17,7 +17,7 @@ resource "helm_release" "superset" {
 		    databases:
 		    - allow_file_upload: false
 		      database_name: "Trino Hive"
-		      sqlalchemy_uri: "trino://trino@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"
+		      sqlalchemy_uri: "trino://hadoop@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"
 		      expose_in_sqllab: true
 		      allow_dml: false
 		    - allow_file_upload: false
