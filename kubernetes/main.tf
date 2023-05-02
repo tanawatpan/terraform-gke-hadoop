@@ -100,6 +100,13 @@ locals {
       name = "gcr.io/${var.project}/hue"
       tag  = "4.11.0"
     }
+    postgres = {
+      version  = "9.5"
+      hostname = "postgres-hue"
+      user     = "hue"
+      password = "${var.hue_postgres_password}"
+      database = "hue"
+    }
   }
 
   external_jars = {

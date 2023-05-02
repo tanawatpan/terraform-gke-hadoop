@@ -2,6 +2,114 @@ data "http" "hue_values_yaml" {
   url = "https://raw.githubusercontent.com/cloudera/hue/master/tools/kubernetes/helm/hue/values.yaml"
 }
 
+resource "kubernetes_service_v1" "postgres_hue" {
+  metadata {
+    name      = "postgres-hue"
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
+  }
+
+  spec {
+    selector = {
+      app = "postgres-hue"
+    }
+
+    port {
+      name = "pgql"
+      port = 5432
+    }
+
+    type = "ClusterIP"
+  }
+}
+
+resource "kubernetes_stateful_set_v1" "postgres_hue" {
+  metadata {
+    name      = "postgres-hue"
+    namespace = kubernetes_namespace.hadoop.metadata[0].name
+  }
+
+  spec {
+    replicas     = 1
+    service_name = "postgres-hue"
+
+    selector {
+      match_labels = {
+        app = "postgres-hue"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "postgres-hue"
+        }
+      }
+
+      spec {
+        container {
+          name  = "postgres-hue"
+          image = "postgres:${local.hue.postgres.version}"
+
+          env {
+            name  = "POSTGRES_USER"
+            value = local.hue.postgres.user
+          }
+
+          env {
+            name  = "POSTGRES_PASSWORD"
+            value = local.hue.postgres.password
+          }
+
+          env {
+            name  = "POSTGRES_DB"
+            value = local.hue.postgres.database
+          }
+
+          env {
+            name  = "PGDATA"
+            value = "/var/lib/postgresql/data/pgdata"
+          }
+
+          port {
+            container_port = kubernetes_service_v1.postgres_hue.spec.0.port.0.port
+            protocol       = "TCP"
+          }
+
+          resources {
+            requests = {
+              cpu = "20m"
+            }
+          }
+
+          volume_mount {
+            mount_path = "/var/lib/postgresql/data"
+            name       = "postgres-data"
+          }
+        }
+
+      }
+    }
+
+    volume_claim_template {
+      metadata {
+        name = "postgres-data"
+      }
+
+      spec {
+        access_modes = ["ReadWriteOnce"]
+
+        resources {
+          requests = {
+            storage = "1Gi"
+          }
+        }
+
+        storage_class_name = "standard-rwo"
+      }
+    }
+  }
+}
+
 resource "helm_release" "hue" {
   name             = "hue"
   repository       = "https://helm.gethue.com"
@@ -31,6 +139,12 @@ resource "helm_release" "hue" {
 		    [spark]
 		    sql_server_host=${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local
 		    sql_server_port=10000
+		  database:
+		    create: false
+		    name: "${local.hue.postgres.database}"
+		    host: "${local.hue.postgres.hostname}"
+		    user: "${local.hue.postgres.user}"
+		    port: ${kubernetes_stateful_set_v1.postgres_hue.spec.0.template.0.spec.0.container.0.port.0.container_port}
 	EOL
   ]
 
@@ -69,13 +183,13 @@ resource "helm_release" "hue" {
   }
 
   set {
-    name  = "hue.database.persist"
-    value = "false"
-  }
-
-  set {
     name  = "hue.replicas"
     value = "1"
+  }
+
+  set_sensitive {
+    name  = "hue.database.password"
+    value = local.hue.postgres.password
   }
 
   cleanup_on_fail = true

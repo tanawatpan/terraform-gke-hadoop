@@ -45,3 +45,9 @@ variable "superset_password" {
   description = "Superset admin password"
 }
 
+variable "hue_postgres_password" {
+  type        = string
+  sensitive   = true
+  description = "Hue Postgres password"
+}
+
