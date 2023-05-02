@@ -122,7 +122,8 @@ resource "local_file" "entrypoint" {
 			cat > $HADOOP_HOME/etc/hadoop/core-site.xml <<-EOL
 				<configuration>
 					$(create_property fs.defaultFS					hdfs://$NAMENODE_HOSTNAME:9000 )
-					$(create_property fs.AbstractFileSystem.gs.impl com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS )
+					$(create_property fs.gs.impl					com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem )
+					$(create_property fs.AbstractFileSystem.gs.impl com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS ) 
 					$(create_property hadoop.proxyuser.hue.hosts	"*" )
 					$(create_property hadoop.proxyuser.hue.groups	"*" )
 					$(create_property hadoop.proxyuser.trino.hosts	"*" )
@@ -174,6 +175,7 @@ resource "local_file" "entrypoint" {
 				spark.hadoop.fs.defaultFS                   hdfs://$NAMENODE_HOSTNAME:9000
 				spark.sql.warehouse.dir                     hdfs://$${NAMENODE_HOSTNAME}:9000/$${HIVE_WAREHOUSE:=/user/hive/warehouse}
 				spark.hadoop.fs.hdfs.impl                   org.apache.hadoop.hdfs.DistributedFileSystem
+				spark.hadoop.fs.gs.impl						com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem
 				spark.hadoop.fs.AbstractFileSystem.gs.impl  com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS
 
 				spark.sql.catalogImplementation  hive

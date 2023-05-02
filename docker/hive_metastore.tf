@@ -44,6 +44,7 @@ resource "local_file" "hive_metastore_entrypoint" {
 			cat > $HADOOP_HOME/etc/hadoop/core-site.xml <<-EOF
 				<configuration>
 					$(create_property fs.defaultFS					hdfs://$NAMENODE_HOSTNAME:9000 )
+					$(create_property fs.gs.impl					com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem )
 					$(create_property fs.AbstractFileSystem.gs.impl com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS )
 					$(create_property hadoop.proxyuser.hue.hosts	"*" )
 					$(create_property hadoop.proxyuser.hue.groups	"*" )
@@ -84,6 +85,8 @@ resource "local_file" "hive_metastore_dockerfile" {
 		
 		ARG MYSQL_CONNECTOR_VERSION=8.0.33
 		ARG MYSQL_CONNECTOR_URL=https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-$${MYSQL_CONNECTOR_VERSION}.tar.gz
+
+		ARG GCS_CONNECTOR_URL=${local.external_jars.gcs_connector}
 		
 		ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 		ENV HADOOP_HOME=/opt/hadoop
@@ -96,6 +99,8 @@ resource "local_file" "hive_metastore_dockerfile" {
 		RUN ln -s $HADOOP_HOME/share/hadoop/tools/lib/hadoop-aws-*    $HADOOP_HOME/share/hadoop/common/lib/ \
 		 && ln -s $HADOOP_HOME/share/hadoop/tools/lib/aws-java-sdk-*  $HADOOP_HOME/share/hadoop/common/lib/ \
 		 && rm $HIVE_HOME/lib/guava-19.0.jar && cp $HADOOP_HOME/share/hadoop/hdfs/lib/guava-27.0-jre.jar $HIVE_HOME/lib/ # https://issues.apache.org/jira/browse/HIVE-22915
+
+		RUN wget -q -P $HADOOP_HOME/share/hadoop/common/lib $GCS_CONNECTOR_URL 
 		
 		RUN groupadd -r hive --gid=1000 \
 		 && useradd -r -g hive --uid=1000 -d $HIVE_HOME hive \
