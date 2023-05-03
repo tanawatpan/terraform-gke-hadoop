@@ -81,7 +81,7 @@ locals {
 
   drill = {
     name     = "drill"
-    replicas = 2
+    replicas = 1
     image = {
       name = "apache/drill"
       tag  = "latest-openjdk-11"

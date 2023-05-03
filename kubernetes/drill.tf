@@ -224,7 +224,7 @@ resource "kubernetes_stateful_set" "drill" {
 					"storage": {
 					  gcs: {
 					    type : "file",
-					    connection : "gs://bucket",
+					    connection : "gs://<your_bucket_name>",
 					    workspaces : {
 					    "tmp" : {
 					      "location" : "/tmp",
@@ -303,6 +303,17 @@ resource "kubernetes_stateful_set" "drill" {
 					    }
 					    },
 					    enabled: false
+					  }
+					}
+					"storage": {
+					  hive: {
+					    type: "hive",
+					    configProps: {
+					      "hive.metastore.uris": "thrift://${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}",
+					      "hive.metastore.sasl.enabled": "false",
+					      "fs.default.name": "hdfs://namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9000/"
+					    },
+					    enabled: true
 					  }
 					}
 				EOL
