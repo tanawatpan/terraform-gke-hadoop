@@ -15,7 +15,7 @@ resource "helm_release" "trino" {
 		additionalCatalogs:
 		  hive: |-
 		    connector.name=hive
-        hive.metastore.username=hadoop
+		    hive.metastore.username=hadoop
 		    hive.hdfs.impersonation.enabled=true
 		    hive.auto-purge=true
 		    hive.allow-drop-table=true
