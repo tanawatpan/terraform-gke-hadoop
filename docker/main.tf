@@ -35,6 +35,7 @@ locals {
     }
     python_libraries = [
       "numpy",
+      "scipy",
       "pandas",
       "matplotlib",
       "seaborn",

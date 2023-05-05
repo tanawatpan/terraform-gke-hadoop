@@ -59,6 +59,11 @@ resource "local_file" "hadoop_setup" {
 		function create_python_virtual_environment {
 			su - $HADOOP_USER -c "python3 -m venv $PYTHON_VENV"
 			su - $HADOOP_USER -c " echo \"source $PYTHON_VENV_PATH/bin/activate\" >> ~/.bashrc "
+			su - $HADOOP_USER -c "
+				set -x
+				source $PYTHON_VENV_PATH/bin/activate
+				pip3 install -q numpy regex pandas scipy
+			"
 		}
 
 		function install_spark_libs {
