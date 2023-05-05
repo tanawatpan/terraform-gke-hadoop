@@ -15,7 +15,7 @@ resource "helm_release" "superset" {
 		extraConfigs:
 		  import_datasources.yaml: |
 		    databases:
-		    - allow_file_upload: false
+		    - allow_file_upload: true
 		      database_name: "Trino Hive"
 		      sqlalchemy_uri: "trino://hadoop@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"
 		      expose_in_sqllab: true
