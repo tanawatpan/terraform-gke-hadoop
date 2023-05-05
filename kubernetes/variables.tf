@@ -51,3 +51,8 @@ variable "hue_postgres_password" {
   description = "Hue Postgres password"
 }
 
+variable "hive_metastore_mysql_password" {
+  type        = string
+  sensitive   = true
+  description = "Hive Metastore Mysql Password"
+}

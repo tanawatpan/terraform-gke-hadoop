@@ -138,7 +138,7 @@ resource "helm_release" "hue" {
 		    webhdfs_url=http://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode_ui.spec.0.port.0.target_port}/webhdfs/v1
 		    [spark]
 		    sql_server_host=${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local
-		    sql_server_port=10000
+		    sql_server_port=${kubernetes_service_v1.spark_thrift.spec.0.port.0.target_port}
 		  database:
 		    create: false
 		    name: "${local.hue.postgres.database}"
@@ -169,7 +169,7 @@ resource "helm_release" "hue" {
 
   set {
     name  = "image.tag"
-    value = "4.11.0"
+    value = local.hue.image.tag
   }
 
   set {
@@ -184,7 +184,7 @@ resource "helm_release" "hue" {
 
   set {
     name  = "hue.replicas"
-    value = "1"
+    value = local.hue.replicas
   }
 
   set_sensitive {

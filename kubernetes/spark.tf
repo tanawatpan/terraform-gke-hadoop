@@ -151,7 +151,7 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
 
           env {
             name  = "HIVE_WAREHOUSE"
-            value = "user/hive/warehouse"
+            value = local.hive_metastore.warehouse
           }
 
           port {
@@ -184,7 +184,7 @@ resource "kubernetes_deployment_v1" "spark_worker" {
   }
 
   spec {
-    replicas = 4
+    replicas = local.spark.worker.replicas
 
     selector {
       match_labels = {
@@ -334,7 +334,7 @@ resource "kubernetes_deployment_v1" "spark_thrift" {
 
           env {
             name  = "HIVE_WAREHOUSE"
-            value = "user/hive/warehouse"
+            value = local.hive_metastore.warehouse
           }
 
           port {

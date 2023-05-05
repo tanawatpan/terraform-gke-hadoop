@@ -1,5 +1,5 @@
 output "spark_thrift_server" {
-  value = "${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:10000"
+  value = "${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.spark_thrift.spec.0.port.0.target_port}"
 }
 
 output "hive_metastore" {

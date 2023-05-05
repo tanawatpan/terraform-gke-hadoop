@@ -91,7 +91,7 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
 
           env {
             name  = "HIVE_WAREHOUSE"
-            value = "user/hive/warehouse"
+            value = local.hive_metastore.warehouse
           }
 
           port {

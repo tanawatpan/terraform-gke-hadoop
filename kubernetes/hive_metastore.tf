@@ -87,7 +87,7 @@ resource "kubernetes_deployment_v1" "hive_metastore" {
 
           env {
             name  = "HIVE_WAREHOUSE"
-            value = "user/hive/warehouse"
+            value = local.hive_metastore.warehouse
           }
 
           env {
@@ -102,16 +102,16 @@ resource "kubernetes_deployment_v1" "hive_metastore" {
 
           env {
             name  = "DATABASE_DB"
-            value = "metastore_db"
+            value = local.hive_metastore.mysql.database
           }
 
           env {
             name  = "DATABASE_USER"
-            value = "admin"
+            value = local.hive_metastore.mysql.user
           }
           env {
             name  = "DATABASE_PASSWORD"
-            value = "admin"
+            value = local.hive_metastore.mysql.password
           }
 
           port {
@@ -166,7 +166,7 @@ resource "kubernetes_stateful_set_v1" "hive_metastore_mysql" {
 
         container {
           name  = "hive-metastore-mysql"
-          image = "mariadb:latest"
+          image = "${local.hive_metastore.mysql.image.name}:${local.hive_metastore.mysql.image.tag}"
 
           port {
             container_port = 3306
@@ -174,19 +174,19 @@ resource "kubernetes_stateful_set_v1" "hive_metastore_mysql" {
 
           env {
             name  = "MYSQL_ROOT_PASSWORD"
-            value = "admin"
+            value = local.hive_metastore.mysql.root_password
           }
           env {
             name  = "MYSQL_USER"
-            value = "admin"
+            value = local.hive_metastore.mysql.user
           }
           env {
             name  = "MYSQL_PASSWORD"
-            value = "admin"
+            value = local.hive_metastore.mysql.password
           }
           env {
             name  = "MYSQL_DATABASE"
-            value = "metastore_db"
+            value = local.hive_metastore.mysql.database
           }
 
           volume_mount {

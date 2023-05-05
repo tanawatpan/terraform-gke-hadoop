@@ -65,6 +65,12 @@ locals {
     }
   }
 
+  spark = {
+    worker = {
+      replicas = 4
+    }
+  }
+
   jupyter = {
     image = {
       name = "gcr.io/${var.project}/jupyter"
@@ -73,9 +79,20 @@ locals {
   }
 
   hive_metastore = {
+    warehouse = "user/hive/warehouse"
     image = {
       name = "gcr.io/${var.project}/hive-metastore"
       tag  = "1.0"
+    }
+    mysql = {
+      image = {
+        name = "mariadb"
+        tag  = "10.11"
+      }
+      root_password = var.hive_metastore_mysql_password
+      user          = "admin"
+      password      = var.hive_metastore_mysql_password
+      database      = "metastore_db"
     }
   }
 
@@ -95,13 +112,20 @@ locals {
     mongodb_driver_version = "4.4.2"
   }
 
+  trino = {
+    worker = {
+      replicas = 2
+    }
+  }
+
   hue = {
+    replicas = 1
     image = {
       name = "gcr.io/${var.project}/hue"
       tag  = "4.11.0"
     }
     postgres = {
-      version  = "9.5"
+      version  = "14.7"
       hostname = "postgres-hue"
       user     = "hue"
       password = "${var.hue_postgres_password}"

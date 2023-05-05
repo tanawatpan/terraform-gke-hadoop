@@ -31,7 +31,7 @@ resource "helm_release" "trino" {
 
   set {
     name  = "server.workers"
-    value = 2
+    value = local.trino.worker.replicas
   }
 
   cleanup_on_fail = true
