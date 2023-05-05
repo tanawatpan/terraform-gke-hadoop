@@ -43,6 +43,8 @@ resource "local_file" "install_jupyter" {
 		
 				c.RemoteKernelManager.cull_idle_timeout = 8 * 60
 				c.RemoteKernelManager.cull_interval = 2 * 60
+
+				c.LabServerApp.notebook_starts_kernel = False
 			EOL
 		}
 
