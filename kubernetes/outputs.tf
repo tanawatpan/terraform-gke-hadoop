@@ -7,7 +7,7 @@ output "hive_metastore" {
 }
 
 output "namenode" {
-  value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9000"
+  value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}"
 }
 
 output "trino" {

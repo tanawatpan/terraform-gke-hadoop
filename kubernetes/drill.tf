@@ -39,7 +39,7 @@ resource "kubernetes_service_v1" "drill_service" {
   }
 }
 
-resource "kubernetes_service" "drills" {
+resource "kubernetes_service_v1" "drills" {
   metadata {
     name      = "drills"
     namespace = kubernetes_namespace.drill.metadata.0.name
@@ -59,7 +59,7 @@ resource "kubernetes_service" "drills" {
   }
 }
 
-resource "kubernetes_stateful_set" "drill" {
+resource "kubernetes_stateful_set_v1" "drill" {
   metadata {
     name      = local.drill.name
     namespace = kubernetes_namespace.drill.metadata.0.name
@@ -123,8 +123,8 @@ resource "kubernetes_stateful_set" "drill" {
 				echo "clientPortAddress=0.0.0.0" >> $ZOO_HOME/conf/zoo.cfg
 
 				for ((i=0;i<$REPLICAS;i++)); do
-				    echo "server.$i=${local.drill.name}-$i.${kubernetes_service.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:2888:3888" >> $ZOO_HOME/conf/zoo.cfg
-				    NODES+="${local.drill.name}-$i.${kubernetes_service.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:${local.drill.zookeeper.port},"
+				    echo "server.$i=${local.drill.name}-$i.${kubernetes_service_v1.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:2888:3888" >> $ZOO_HOME/conf/zoo.cfg
+				    NODES+="${local.drill.name}-$i.${kubernetes_service_v1.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:${local.drill.zookeeper.port},"
 				done
 
 				POD_NAME=$(hostname)
@@ -140,7 +140,7 @@ resource "kubernetes_stateful_set" "drill" {
 					"storage": {
 					  dfs: {
 					    type : "file",
-					    connection : "hdfs://namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9000",
+					    connection : "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}",
 					    workspaces : {
 					      "tmp" : {
 					        "location" : "/tmp",
@@ -311,7 +311,7 @@ resource "kubernetes_stateful_set" "drill" {
 					    configProps: {
 					      "hive.metastore.uris": "thrift://${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}",
 					      "hive.metastore.sasl.enabled": "false",
-					      "fs.default.name": "hdfs://namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9000/"
+					      "fs.default.name": "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}/"
 					    },
 					    enabled: true
 					  }

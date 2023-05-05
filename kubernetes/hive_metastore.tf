@@ -53,7 +53,7 @@ resource "kubernetes_service_v1" "hive_metastore_mysql" {
   }
 }
 
-resource "kubernetes_deployment" "hive_metastore" {
+resource "kubernetes_deployment_v1" "hive_metastore" {
   metadata {
     name      = "hive-metastore"
     namespace = kubernetes_namespace.hive_metastore.metadata.0.name
@@ -82,7 +82,7 @@ resource "kubernetes_deployment" "hive_metastore" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
@@ -123,7 +123,7 @@ resource "kubernetes_deployment" "hive_metastore" {
   }
 }
 
-resource "kubernetes_stateful_set" "hive_metastore_mysql" {
+resource "kubernetes_stateful_set_v1" "hive_metastore_mysql" {
   metadata {
     name      = "hive-metastore-mysql"
     namespace = kubernetes_namespace.hive_metastore.metadata.0.name

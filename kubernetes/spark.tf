@@ -5,13 +5,15 @@ resource "kubernetes_service_v1" "spark_master" {
   }
 
   spec {
-    port {
-      port        = 7077
-      target_port = 7077
-    }
+    cluster_ip = "None"
 
     selector = {
       app = "spark-master"
+    }
+
+    port {
+      port        = 7077
+      target_port = 7077
     }
   }
 
@@ -99,31 +101,32 @@ resource "kubernetes_service_v1" "spark_history" {
   }
 }
 
-resource "kubernetes_deployment" "spark_master" {
+resource "kubernetes_stateful_set_v1" "spark_master" {
   metadata {
-    name      = "spark-master"
+    name      = kubernetes_service_v1.spark_master.metadata.0.name
     namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
-    replicas = 1
+    replicas     = 1
+    service_name = kubernetes_service_v1.spark_master.metadata.0.name
 
     selector {
       match_labels = {
-        app = "spark-master"
+        app = kubernetes_service_v1.spark_master.metadata.0.name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "spark-master"
+          app = kubernetes_service_v1.spark_master.metadata.0.name
         }
       }
 
       spec {
         container {
-          name  = "spark-master"
+          name  = kubernetes_service_v1.spark_master.metadata.0.name
           image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
           env {
@@ -133,12 +136,12 @@ resource "kubernetes_deployment" "spark_master" {
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = "0.0.0.0"
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
@@ -174,7 +177,7 @@ resource "kubernetes_deployment" "spark_master" {
   }
 }
 
-resource "kubernetes_deployment" "spark_worker" {
+resource "kubernetes_deployment_v1" "spark_worker" {
   metadata {
     name      = "spark-worker"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -208,12 +211,12 @@ resource "kubernetes_deployment" "spark_worker" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = kubernetes_service_v1.spark_master.metadata.0.name
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
         }
       }
@@ -221,7 +224,7 @@ resource "kubernetes_deployment" "spark_worker" {
   }
 }
 
-resource "kubernetes_deployment" "spark_history" {
+resource "kubernetes_deployment_v1" "spark_history" {
   metadata {
     name      = "spark-history"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -255,12 +258,12 @@ resource "kubernetes_deployment" "spark_history" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = kubernetes_service_v1.spark_master.metadata.0.name
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           port {
@@ -282,7 +285,7 @@ resource "kubernetes_deployment" "spark_history" {
   }
 }
 
-resource "kubernetes_deployment" "spark_thrift" {
+resource "kubernetes_deployment_v1" "spark_thrift" {
   metadata {
     name      = "spark-thrift"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -316,12 +319,12 @@ resource "kubernetes_deployment" "spark_thrift" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = kubernetes_service_v1.spark_master.metadata.0.name
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {

@@ -24,7 +24,7 @@ resource "kubernetes_service_v1" "jupyter" {
   }
 }
 
-resource "kubernetes_stateful_set" "jupyter" {
+resource "kubernetes_stateful_set_v1" "jupyter" {
   metadata {
     name      = "jupyter"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
@@ -76,7 +76,7 @@ resource "kubernetes_stateful_set" "jupyter" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
           }
 
           env {

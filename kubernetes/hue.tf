@@ -134,8 +134,8 @@ resource "helm_release" "hue" {
 		    [hadoop]
 		    [[hdfs_clusters]]
 		    [[[default]]]
-		    fs_defaultfs=hdfs://namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9000
-		    webhdfs_url=http://namenode-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:9870/webhdfs/v1
+		    fs_defaultfs=hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}
+		    webhdfs_url=http://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode_ui.spec.0.port.0.target_port}/webhdfs/v1
 		    [spark]
 		    sql_server_host=${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local
 		    sql_server_port=10000
