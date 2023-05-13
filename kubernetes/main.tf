@@ -67,7 +67,9 @@ locals {
 
   spark = {
     worker = {
-      replicas = 4
+      replicas = 5
+      cpu      = "1000m"
+      memory   = "2Gi"
     }
   }
 

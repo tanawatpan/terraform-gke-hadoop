@@ -204,6 +204,13 @@ resource "kubernetes_deployment_v1" "spark_worker" {
           name  = "spark-worker"
           image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
 
+          resources {
+            requests = {
+              cpu    = local.spark.worker.cpu
+              memory = local.spark.worker.memory
+            }
+          }
+
           env {
             name  = "NODE_TYPE"
             value = "SPARK_WORKER"
