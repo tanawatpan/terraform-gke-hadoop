@@ -59,13 +59,18 @@ locals {
   cluster_name = "cluster-1"
 
   hadoop = {
+    user = "hadoop"
     image = {
-      name = "gcr.io/${var.project}/hadoop-spark"
-      tag  = "1.1.0"
+      name = "${var.container_repository}/${var.project}/hadoop"
+      tag  = "1.0"
     }
   }
 
   spark = {
+    image = {
+      name = "${var.container_repository}/${var.project}/spark"
+      tag  = "1.0"
+    }
     worker = {
       replicas = 5
       cpu      = "1000m"
@@ -75,7 +80,7 @@ locals {
 
   jupyter = {
     image = {
-      name = "gcr.io/${var.project}/jupyter"
+      name = "${var.container_repository}/${var.project}/jupyter"
       tag  = "1.0"
     }
   }
@@ -83,7 +88,7 @@ locals {
   hive_metastore = {
     warehouse = "user/hive/warehouse"
     image = {
-      name = "gcr.io/${var.project}/hive-metastore"
+      name = "${var.container_repository}/${var.project}/hive-metastore"
       tag  = "1.0"
     }
     mysql = {
@@ -123,7 +128,7 @@ locals {
   hue = {
     replicas = 1
     image = {
-      name = "gcr.io/${var.project}/hue"
+      name = "${var.container_repository}/${var.project}/hue"
       tag  = "4.11.0"
     }
     postgres = {
@@ -135,7 +140,7 @@ locals {
     }
   }
 
-  external_jars = {
+  additional_jars = {
     gcs_connector         = "https://repo1.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop3-2.2.12/gcs-connector-hadoop3-2.2.12-shaded.jar",
     mongo_spark_connector = "https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.1.1/mongo-spark-connector_2.12-10.1.1-all.jar",
   }

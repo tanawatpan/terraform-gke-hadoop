@@ -123,7 +123,7 @@ resource "helm_release" "hue" {
 		hue:
 		  ini: |
 		    [desktop]
-		    default_hdfs_superuser=hadoop
+		    default_hdfs_superuser=${local.hadoop.user}
 		    app_blacklist=search,hbase,security,jobbrowser,oozie,importer
 		    django_debug_mode=false
 		    [[task_server]]
@@ -154,7 +154,7 @@ resource "helm_release" "hue" {
 		[[[presto]]]
 		name = Trino Hive
 		interface=sqlalchemy
-		options='{"url": "trino://hadoop@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"}'
+		options='{"url": "trino://${local.hadoop.user}@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"}'
 
 		[[[sparksql]]]
 		name=Spark SQL

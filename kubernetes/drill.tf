@@ -334,7 +334,7 @@ resource "kubernetes_stateful_set_v1" "drill" {
 				rm -f $DRILL_HOME/jars/3rdparty/mongodb-driver-*.jar
 				wget -P $DRILL_HOME/jars/3rdparty https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/${local.drill.mongodb_driver_version}/mongodb-driver-sync-${local.drill.mongodb_driver_version}.jar
 				wget -P $DRILL_HOME/jars/3rdparty https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/${local.drill.mongodb_driver_version}/mongodb-driver-core-${local.drill.mongodb_driver_version}.jar
-				wget -P $DRILL_HOME/jars/3rdparty ${local.external_jars.gcs_connector} 
+				wget -P $DRILL_HOME/jars/3rdparty ${local.additional_jars.gcs_connector} 
 
 				$DRILL_HOME/bin/drillbit.sh start && sleep 45
 

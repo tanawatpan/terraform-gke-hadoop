@@ -56,11 +56,11 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
           command = [
             "/bin/sh",
             "-c",
-            "rm -rf /home/hadoop/jupyter/lost+found && chown -R 1000:1000 /home/hadoop/jupyter",
+            "rm -rf /home/${local.hadoop.user}/jupyter/lost+found && chown -R 1000:1000 /home/${local.hadoop.user}/jupyter",
           ]
 
           volume_mount {
-            mount_path = "/home/hadoop/jupyter"
+            mount_path = "/home/${local.hadoop.user}/jupyter"
             name       = "jupyter-notebook"
           }
         }
@@ -109,7 +109,7 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
           }
 
           volume_mount {
-            mount_path = "/home/hadoop/jupyter"
+            mount_path = "/home/${local.hadoop.user}/jupyter"
             name       = "jupyter-notebook"
           }
         }

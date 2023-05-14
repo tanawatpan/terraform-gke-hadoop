@@ -7,3 +7,8 @@ variable "project" {
     error_message = "The project ID must not be empty."
   }
 }
+
+variable "container_repository" {
+  type        = string
+  description = "Container Registry repository name"
+}

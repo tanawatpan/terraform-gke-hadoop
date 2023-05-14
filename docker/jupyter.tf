@@ -29,14 +29,30 @@ resource "local_file" "install_jupyter" {
 			cat  >>  ~/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/themes.jupyterlab-settings <<-EOL
 				{ "theme": "JupyterLab Dark" }
 			EOL
-		
+		}
+
+		install_jupyterlab
+	EOT
+}
+
+resource "local_file" "jupyter_entrypoint" {
+  filename = "jupyter/jupyter-entrypoint.sh"
+  content  = <<-EOT
+		#!/bin/bash
+
+		set -e
+		set -x
+
+		source /home/$HADOOP_USER/config.sh
+
+		function config_jupyter {
 			# Config Jupyter Lab
 			cat >> ~/.jupyter/jupyter_notebook_config.py <<-EOL
-				c.NotebookApp.ip = '0.0.0.0'
-				c.NotebookApp.port = 8888
+				c.ServerApp.ip = '0.0.0.0'
+				c.ServerApp.port = 8888
+				c.ServerApp.allow_origin = '*'
+				c.IdentityProvider.token = "$${JUPYTER_PWD:=P@ssw0rd}"
 				c.NotebookApp.open_browser = False
-				c.NotebookApp.token = 'P@ssw0rd'
-				c.NotebookApp.allow_origin = '*'
 		
 				c.MappingKernelManager.cull_idle_timeout = 8 * 60
 				c.MappingKernelManager.cull_interval = 2 * 60
@@ -48,25 +64,34 @@ resource "local_file" "install_jupyter" {
 			EOL
 		}
 
-		install_jupyterlab
+		function start {
+			echo "spark.driver.host $(hostname -i)" >> $SPARK_HOME/conf/spark-defaults.conf
+			$PYTHON_VENV_PATH/bin/jupyter lab --no-browser --config=/home/$HADOOP_USER/.jupyter/jupyter_notebook_config.py --notebook-dir=/home/$HADOOP_USER/jupyter
+		}
+
+		config_hadoop
+		config_spark
+		config_jupyter
+		start
 	EOT
 }
 
 resource "local_file" "jupyter_dockerfile" {
-  depends_on = [local_file.hadoop_dockerfile]
+  depends_on = [local_file.spark_dockerfile]
   filename   = "jupyter/Dockerfile"
   content    = <<-EOT
-		FROM ${basename(local.hadoop.image.name)}:${local.hadoop.image.tag} as ${basename(local.jupyter.image.name)}-${local.jupyter.image.tag}
+		FROM ${basename(local.spark.image.name)}:${local.spark.image.tag}
 
 		USER root
 		COPY ${basename(local_file.install_jupyter.filename)} /tmp/${basename(local_file.install_jupyter.filename)}
 		RUN chmod +x /tmp/${basename(local_file.install_jupyter.filename)}
-
-		USER ${local.hadoop.user}
+		
+		USER $HADOOP_USER
 		RUN /tmp/${basename(local_file.install_jupyter.filename)}
 
-		WORKDIR /home/${local.hadoop.user}/
-		CMD ["/bin/bash", "${basename(local_file.entrypoint.filename)}"]
+		WORKDIR /home/$HADOOP_USER
+		COPY --chown=$HADOOP_USER:$HADOOP_USER ${basename(local_file.jupyter_entrypoint.filename)} ${basename(local_file.jupyter_entrypoint.filename)}
+		CMD ["/bin/bash", "${basename(local_file.jupyter_entrypoint.filename)}"]
  	 EOT
 
   provisioner "local-exec" {
@@ -81,8 +106,9 @@ resource "local_file" "jupyter_dockerfile" {
 
   lifecycle {
     replace_triggered_by = [
-      local_file.hadoop_dockerfile.id,
-      local_file.install_jupyter.id
+      local_file.spark_dockerfile.content,
+      local_file.install_jupyter.content,
+      local_file.jupyter_entrypoint.content,
     ]
   }
 }

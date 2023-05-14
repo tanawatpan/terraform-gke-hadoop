@@ -28,6 +28,10 @@ variable "zone" {
   }
 }
 
+variable "container_repository" {
+  type        = string
+  description = "Container Registry repository name"
+}
 
 variable "web_domain" {
   type        = string

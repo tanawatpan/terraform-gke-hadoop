@@ -17,7 +17,7 @@ resource "helm_release" "superset" {
 		    databases:
 		    - allow_file_upload: true
 		      database_name: "Trino Hive"
-		      sqlalchemy_uri: "trino://hadoop@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"
+		      sqlalchemy_uri: "trino://${local.hadoop.user}@trino.${helm_release.trino.namespace}.svc.cluster.local:8080/hive"
 		      expose_in_sqllab: true
 		      allow_dml: false
 		    - allow_file_upload: false
@@ -27,7 +27,7 @@ resource "helm_release" "superset" {
 		      allow_dml: false
 		    - allow_file_upload: false
 		      database_name: "Apache Spark SQL"
-		      sqlalchemy_uri: "hive://hadoop@${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.spark_thrift.spec.0.port.0.target_port}"
+		      sqlalchemy_uri: "hive://${local.hadoop.user}@${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.spark_thrift.spec.0.port.0.target_port}"
 		      expose_in_sqllab: true
 		      allow_dml: false
 		service:

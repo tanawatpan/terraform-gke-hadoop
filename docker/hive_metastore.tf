@@ -86,7 +86,7 @@ resource "local_file" "hive_metastore_dockerfile" {
 		ARG MYSQL_CONNECTOR_VERSION=8.0.33
 		ARG MYSQL_CONNECTOR_URL=https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-$${MYSQL_CONNECTOR_VERSION}.tar.gz
 
-		ARG GCS_CONNECTOR_URL=${local.external_jars.gcs_connector}
+		ARG GCS_CONNECTOR_URL=${local.additional_jars.gcs_connector}
 		
 		ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 		ENV HADOOP_HOME=/opt/hadoop
@@ -125,7 +125,7 @@ resource "local_file" "hive_metastore_dockerfile" {
 
   lifecycle {
     replace_triggered_by = [
-      local_file.hive_metastore_entrypoint.id,
+      local_file.hive_metastore_entrypoint.content,
     ]
   }
 }
