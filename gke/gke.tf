@@ -41,7 +41,7 @@ resource "google_container_cluster" "cluster" {
   }
 
   workload_identity_config {
-    workload_pool = null # Disable workload identity
+    workload_pool = "${var.project}.svc.id.goog"
   }
 
   network_policy {

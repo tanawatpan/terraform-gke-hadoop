@@ -49,6 +49,8 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
       }
 
       spec {
+        service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
+
         init_container {
           name  = "change-volume-owner"
           image = "busybox:latest"
@@ -76,7 +78,7 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
@@ -86,7 +88,7 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
 
           env {
             name  = "HIVE_METASTORE_HOSTNAME"
-            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_service_v1.hive_metastore.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {

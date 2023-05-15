@@ -6,8 +6,8 @@ resource "helm_release" "trino" {
   name             = "trino"
   repository       = "https://trinodb.github.io/charts"
   chart            = "trino"
-  namespace        = "trino"
-  create_namespace = true
+  namespace        = kubernetes_namespace.hadoop.metadata.0.name
+  create_namespace = false
 
   values = [
     data.http.trino_values_yaml.response_body,
@@ -25,7 +25,10 @@ resource "helm_release" "trino" {
 		    hive.allow-rename-column=true
 		    hive.metastore.thrift.delete-files-on-drop=true
 		    hive.storage-format=PARQUET
-		    hive.metastore.uri=thrift://${local.hadoop.user}@${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}
+		    hive.metastore.uri=thrift://${local.hadoop.user}@${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_service_v1.hive_metastore.metadata.0.namespace}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}
+		serviceAccount:
+		  create: false
+		  name: ${kubernetes_service_account.storage_admin.metadata.0.name}
 	EOL
   ]
 

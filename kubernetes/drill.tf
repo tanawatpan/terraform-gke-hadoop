@@ -1,13 +1,7 @@
-resource "kubernetes_namespace" "drill" {
-  metadata {
-    name = "drill"
-  }
-}
-
 resource "kubernetes_service_v1" "drill_service" {
   metadata {
     name      = "drill-service"
-    namespace = kubernetes_namespace.drill.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
@@ -42,7 +36,7 @@ resource "kubernetes_service_v1" "drill_service" {
 resource "kubernetes_service_v1" "drills" {
   metadata {
     name      = "drills"
-    namespace = kubernetes_namespace.drill.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
@@ -62,7 +56,7 @@ resource "kubernetes_service_v1" "drills" {
 resource "kubernetes_stateful_set_v1" "drill" {
   metadata {
     name      = local.drill.name
-    namespace = kubernetes_namespace.drill.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
@@ -83,6 +77,8 @@ resource "kubernetes_stateful_set_v1" "drill" {
       }
 
       spec {
+        service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
+
         container {
           name  = local.drill.name
           image = "${local.drill.image.name}:${local.drill.image.tag}"
@@ -123,8 +119,8 @@ resource "kubernetes_stateful_set_v1" "drill" {
 				echo "clientPortAddress=0.0.0.0" >> $ZOO_HOME/conf/zoo.cfg
 
 				for ((i=0;i<$REPLICAS;i++)); do
-				    echo "server.$i=${local.drill.name}-$i.${kubernetes_service_v1.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:2888:3888" >> $ZOO_HOME/conf/zoo.cfg
-				    NODES+="${local.drill.name}-$i.${kubernetes_service_v1.drills.metadata.0.name}.${kubernetes_namespace.drill.metadata.0.name}.svc.cluster.local:${local.drill.zookeeper.port},"
+				    echo "server.$i=${local.drill.name}-$i.${kubernetes_service_v1.drills.metadata.0.name}.${kubernetes_service_v1.drills.metadata.0.namespace}.svc.cluster.local:2888:3888" >> $ZOO_HOME/conf/zoo.cfg
+				    NODES+="${local.drill.name}-$i.${kubernetes_service_v1.drills.metadata.0.name}.${kubernetes_service_v1.drills.metadata.0.namespace}.svc.cluster.local:${local.drill.zookeeper.port},"
 				done
 
 				POD_NAME=$(hostname)
@@ -140,7 +136,7 @@ resource "kubernetes_stateful_set_v1" "drill" {
 					"storage": {
 					  dfs: {
 					    type : "file",
-					    connection : "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}",
+					    connection : "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}",
 					    workspaces : {
 					      "tmp" : {
 					        "location" : "/tmp",
@@ -309,9 +305,9 @@ resource "kubernetes_stateful_set_v1" "drill" {
 					  hive: {
 					    type: "hive",
 					    configProps: {
-					      "hive.metastore.uris": "thrift://${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}",
+					      "hive.metastore.uris": "thrift://${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_service_v1.hive_metastore.metadata.0.namespace}.svc.cluster.local:${kubernetes_service_v1.hive_metastore.spec.0.port.0.target_port}",
 					      "hive.metastore.sasl.enabled": "false",
-					      "fs.default.name": "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}/"
+					      "fs.default.name": "hdfs://${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local:${kubernetes_service_v1.namenode.spec.0.port.0.target_port}/"
 					    },
 					    enabled: true
 					  }

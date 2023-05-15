@@ -125,6 +125,8 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
       }
 
       spec {
+        service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
+
         container {
           name  = kubernetes_service_v1.spark_master.metadata.0.name
           image = "${local.spark.image.name}:${local.spark.image.tag}"
@@ -136,17 +138,17 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_service_v1.spark_master.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
             name  = "HIVE_METASTORE_HOSTNAME"
-            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_service_v1.hive_metastore.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
@@ -200,6 +202,8 @@ resource "kubernetes_deployment_v1" "spark_worker" {
       }
 
       spec {
+        service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
+
         container {
           name  = "spark-worker"
           image = "${local.spark.image.name}:${local.spark.image.tag}"
@@ -218,12 +222,12 @@ resource "kubernetes_deployment_v1" "spark_worker" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_service_v1.spark_master.metadata.0.namespace}.svc.cluster.local"
           }
         }
       }
@@ -265,12 +269,12 @@ resource "kubernetes_deployment_v1" "spark_history" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_service_v1.spark_master.metadata.0.namespace}.svc.cluster.local"
           }
 
           port {
@@ -315,6 +319,8 @@ resource "kubernetes_deployment_v1" "spark_thrift" {
       }
 
       spec {
+        service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
+
         container {
           name  = "spark-thrift"
           image = "${local.spark.image.name}:${local.spark.image.tag}"
@@ -326,17 +332,17 @@ resource "kubernetes_deployment_v1" "spark_thrift" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
             name  = "SPARK_MASTER_HOSTNAME"
-            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.spark_master.metadata.0.name}-0.${kubernetes_service_v1.spark_master.metadata.0.name}.${kubernetes_service_v1.spark_master.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
             name  = "HIVE_METASTORE_HOSTNAME"
-            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_namespace.hive_metastore.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_service_v1.hive_metastore.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {

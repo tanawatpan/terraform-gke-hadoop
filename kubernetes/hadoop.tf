@@ -134,7 +134,7 @@ resource "kubernetes_stateful_set_v1" "namenode" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           port {
@@ -231,7 +231,7 @@ resource "kubernetes_stateful_set_v1" "datanode" {
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           volume_mount {

@@ -7,7 +7,7 @@ resource "helm_release" "superset" {
   repository       = "http://apache.github.io/superset"
   chart            = "superset"
   namespace        = kubernetes_namespace.hadoop.metadata.0.name
-  create_namespace = true
+  create_namespace = false
 
   values = [
     data.http.superset_values_yaml.response_body,
@@ -22,12 +22,12 @@ resource "helm_release" "superset" {
 		      allow_dml: false
 		    - allow_file_upload: false
 		      database_name: "Apache Drill"
-		      sqlalchemy_uri: "drill+sadrill://${kubernetes_service_v1.drill_service.metadata.0.name}.drill.svc.cluster.local:8047/dfs?use_ssl=False"
+		      sqlalchemy_uri: "drill+sadrill://${kubernetes_service_v1.drill_service.metadata.0.name}.${kubernetes_service_v1.drill_service.metadata.0.namespace}.svc.cluster.local:8047/dfs?use_ssl=False"
 		      expose_in_sqllab: true
 		      allow_dml: false
 		    - allow_file_upload: false
 		      database_name: "Apache Spark SQL"
-		      sqlalchemy_uri: "hive://${local.hadoop.user}@${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local:${kubernetes_service_v1.spark_thrift.spec.0.port.0.target_port}"
+		      sqlalchemy_uri: "hive://${local.hadoop.user}@${kubernetes_service_v1.spark_thrift.metadata.0.name}.${kubernetes_service_v1.spark_thrift.metadata.0.namespace}.svc.cluster.local:${kubernetes_service_v1.spark_thrift.spec.0.port.0.target_port}"
 		      expose_in_sqllab: true
 		      allow_dml: false
 		service:

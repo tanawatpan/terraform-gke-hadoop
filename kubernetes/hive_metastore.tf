@@ -1,14 +1,7 @@
-resource "kubernetes_namespace" "hive_metastore" {
-
-  metadata {
-    name = "hive-metastore"
-  }
-}
-
 resource "kubernetes_service_v1" "hive_metastore" {
   metadata {
     name      = "hive-metastore"
-    namespace = kubernetes_namespace.hive_metastore.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
@@ -32,7 +25,7 @@ resource "kubernetes_service_v1" "hive_metastore" {
 resource "kubernetes_service_v1" "hive_metastore_mysql" {
   metadata {
     name      = "hive-metastore-mysql"
-    namespace = kubernetes_namespace.hive_metastore.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
@@ -56,7 +49,7 @@ resource "kubernetes_service_v1" "hive_metastore_mysql" {
 resource "kubernetes_deployment_v1" "hive_metastore" {
   metadata {
     name      = "hive-metastore"
-    namespace = kubernetes_namespace.hive_metastore.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
@@ -76,13 +69,15 @@ resource "kubernetes_deployment_v1" "hive_metastore" {
       }
 
       spec {
+        service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
+
         container {
           name  = "hive-metastore"
           image = "${local.hive_metastore.image.name}:${local.hive_metastore.image.tag}"
 
           env {
             name  = "NAMENODE_HOSTNAME"
-            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_namespace.hadoop.metadata.0.name}.svc.cluster.local"
+            value = "${kubernetes_service_v1.namenode.metadata.0.name}-0.${kubernetes_service_v1.namenode.metadata.0.name}.${kubernetes_service_v1.namenode.metadata.0.namespace}.svc.cluster.local"
           }
 
           env {
@@ -126,7 +121,7 @@ resource "kubernetes_deployment_v1" "hive_metastore" {
 resource "kubernetes_stateful_set_v1" "hive_metastore_mysql" {
   metadata {
     name      = "hive-metastore-mysql"
-    namespace = kubernetes_namespace.hive_metastore.metadata.0.name
+    namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
