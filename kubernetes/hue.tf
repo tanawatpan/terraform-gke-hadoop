@@ -20,6 +20,12 @@ resource "kubernetes_service_v1" "postgres_hue" {
 
     type = "ClusterIP"
   }
+
+    lifecycle {
+      ignore_changes = [
+        metadata.0.annotations,
+      ]
+  }
 }
 
 resource "kubernetes_stateful_set_v1" "postgres_hue" {
@@ -164,12 +170,12 @@ resource "helm_release" "hue" {
 
   set {
     name  = "image.registry"
-    value = dirname(local.hue.image.name)
+    value = dirname(local.hue.image_name)
   }
 
   set {
     name  = "image.tag"
-    value = local.hue.image.tag
+    value = local.hue.version
   }
 
   set {

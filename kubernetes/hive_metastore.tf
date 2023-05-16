@@ -73,7 +73,7 @@ resource "kubernetes_deployment_v1" "hive_metastore" {
 
         container {
           name  = "hive-metastore"
-          image = "${local.hive_metastore.image.name}:${local.hive_metastore.image.tag}"
+          image = "${local.hive_metastore.image_name}:${local.hive_metastore.version}"
 
           env {
             name  = "NAMENODE_HOSTNAME"

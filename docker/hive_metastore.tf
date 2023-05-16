@@ -71,7 +71,7 @@ resource "local_file" "hive_metastore_entrypoint" {
 resource "local_file" "hive_metastore_dockerfile" {
   filename = "hive-metastore/Dockerfile"
   content  = <<-EOT
-		FROM ubuntu:kinetic as ${basename(local.hive_metastore.image.name)}-${local.hive_metastore.image.tag}
+		FROM ubuntu:kinetic as ${basename(local.hive_metastore.image_name)}-${local.hive_metastore.version}
 		
 		RUN apt-get update \
 		 && apt-get install --assume-yes curl wget ssh net-tools telnet dnsutils jq openjdk-11-jre \
@@ -117,9 +117,9 @@ resource "local_file" "hive_metastore_dockerfile" {
     command = <<-EOT
 		set -x
 		set -e
-		docker build --platform linux/amd64 -t ${basename(local.hive_metastore.image.name)}:${local.hive_metastore.image.tag} ${dirname(self.filename)}
-		docker tag ${basename(local.hive_metastore.image.name)}:${local.hive_metastore.image.tag} ${local.hive_metastore.image.name}:${local.hive_metastore.image.tag}
-		docker push ${local.hive_metastore.image.name}:${local.hive_metastore.image.tag}
+		docker build --platform linux/amd64 -t ${basename(local.hive_metastore.image_name)}:${local.hive_metastore.version} ${dirname(self.filename)}
+		docker tag ${basename(local.hive_metastore.image_name)}:${local.hive_metastore.version} ${local.hive_metastore.image_name}:${local.hive_metastore.version}
+		docker push ${local.hive_metastore.image_name}:${local.hive_metastore.version}
 	EOT
   }
 

@@ -58,39 +58,35 @@ provider "helm" {
 locals {
   cluster_name = "cluster-1"
 
+  container_repository = "${var.container_repository}/${var.project}"
+
   hadoop = {
     user = "hadoop"
-    image = {
-      name = "${var.container_repository}/${var.project}/hadoop"
-      tag  = "1.0"
-    }
+    version = "3.3.5"
+    image_name = "${local.container_repository}/hadoop"
   }
 
   spark = {
-    image = {
-      name = "${var.container_repository}/${var.project}/spark"
-      tag  = "1.0"
-    }
+    version = "3.4.0"
+    image_name = "${local.container_repository}/spark"
     worker = {
-      replicas = 5
+      replicas = 4
       cpu      = "1000m"
-      memory   = "2Gi"
+      memory   = "4Gi"
     }
   }
 
   jupyter = {
-    image = {
-      name = "${var.container_repository}/${var.project}/jupyter"
-      tag  = "1.0"
-    }
+    version = "4.0.0"
+    image_name = "${local.container_repository}/jupyter"
   }
 
   hive_metastore = {
+    version = "3.0.0"
+    image_name = "${local.container_repository}/hive-metastore"
+
     warehouse = "user/hive/warehouse"
-    image = {
-      name = "${var.container_repository}/${var.project}/hive-metastore"
-      tag  = "1.0"
-    }
+
     mysql = {
       image = {
         name = "mariadb"
@@ -106,16 +102,19 @@ locals {
   drill = {
     name     = "drill"
     replicas = 1
+
     image = {
       name = "apache/drill"
       tag  = "latest-openjdk-11"
     }
+
     zookeeper = {
       port           = 2181
       home           = "/opt/zookeeper"
       data_directory = "/var/lib/zookeeper"
       package_url    = "https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.7.1-bin.tar.gz"
     }
+    
     mongodb_driver_version = "4.4.2"
   }
 
@@ -127,10 +126,10 @@ locals {
 
   hue = {
     replicas = 1
-    image = {
-      name = "${var.container_repository}/${var.project}/hue"
-      tag  = "4.11.0"
-    }
+
+    version = "4.11.0"
+    image_name =  "${local.container_repository}/hue"
+
     postgres = {
       version  = "14.7"
       hostname = "postgres-hue"

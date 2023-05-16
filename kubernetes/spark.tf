@@ -129,7 +129,7 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
 
         container {
           name  = kubernetes_service_v1.spark_master.metadata.0.name
-          image = "${local.spark.image.name}:${local.spark.image.tag}"
+          image = "${local.spark.image_name}:${local.spark.version}"
 
           env {
             name  = "NODE_TYPE"
@@ -206,7 +206,7 @@ resource "kubernetes_deployment_v1" "spark_worker" {
 
         container {
           name  = "spark-worker"
-          image = "${local.spark.image.name}:${local.spark.image.tag}"
+          image = "${local.spark.image_name}:${local.spark.version}"
 
           resources {
             requests = {
@@ -260,7 +260,7 @@ resource "kubernetes_deployment_v1" "spark_history" {
       spec {
         container {
           name  = "spark-history"
-          image = "${local.spark.image.name}:${local.spark.image.tag}"
+          image = "${local.spark.image_name}:${local.spark.version}"
 
           env {
             name  = "NODE_TYPE"
@@ -323,7 +323,7 @@ resource "kubernetes_deployment_v1" "spark_thrift" {
 
         container {
           name  = "spark-thrift"
-          image = "${local.spark.image.name}:${local.spark.image.tag}"
+          image = "${local.spark.image_name}:${local.spark.version}"
 
           env {
             name  = "NODE_TYPE"

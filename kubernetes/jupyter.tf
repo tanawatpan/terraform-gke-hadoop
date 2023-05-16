@@ -69,7 +69,7 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
 
         container {
           name  = "jupyter"
-          image = "${local.jupyter.image.name}:${local.jupyter.image.tag}"
+          image = "${local.jupyter.image_name}:${local.jupyter.version}"
 
           env {
             name  = "NODE_TYPE"
@@ -87,6 +87,11 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
           }
 
           env {
+            name  = "SPARK_DRIVER_MEMORY"
+            value = "4g"
+          }
+
+          env {
             name  = "HIVE_METASTORE_HOSTNAME"
             value = "${kubernetes_service_v1.hive_metastore.metadata.0.name}.${kubernetes_service_v1.hive_metastore.metadata.0.namespace}.svc.cluster.local"
           }
@@ -94,6 +99,13 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
           env {
             name  = "HIVE_WAREHOUSE"
             value = local.hive_metastore.warehouse
+          }
+
+          resources {
+            requests = {
+              cpu    = "1000m"
+              memory = "6Gi"
+            }
           }
 
           port {

@@ -149,7 +149,7 @@ resource "local_file" "spark_dockerfile" {
   depends_on = [local_file.hadoop_dockerfile]
   filename   = "spark/Dockerfile"
   content    = <<-EOT
-		FROM ${basename(local.hadoop.image.name)}:${local.hadoop.image.tag}
+		FROM ${basename(local.hadoop.image_name)}:${local.hadoop.version}
 
 		ARG EXTERNAL_JARS="${join(" ", [for lib, url in local.additional_jars : url])}"
 
@@ -176,9 +176,9 @@ resource "local_file" "spark_dockerfile" {
     command = <<-EOT
 		set -x
 		set -e
-		docker build --platform linux/amd64 -t ${basename(local.spark.image.name)}:${local.spark.image.tag} ${dirname(self.filename)}
-		docker tag ${basename(local.spark.image.name)}:${local.spark.image.tag} ${local.spark.image.name}:${local.spark.image.tag}
-		docker push ${local.spark.image.name}:${local.spark.image.tag}
+		docker build --platform linux/amd64 -t ${basename(local.spark.image_name)}:${local.spark.version} ${dirname(self.filename)}
+		docker tag ${basename(local.spark.image_name)}:${local.spark.version} ${local.spark.image_name}:${local.spark.version}
+		docker push ${local.spark.image_name}:${local.spark.version}
 	EOT
   }
 

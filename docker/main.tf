@@ -15,21 +15,17 @@ provider "local" {}
 
 locals {
 
+  container_repository = "${var.container_repository}/${var.project}"
+
   hadoop = {
     user    = "hadoop"
     version = "3.3.5"
-    image = {
-      name = "${var.container_repository}/${var.project}/hadoop"
-      tag  = "1.0"
-    }
+    image_name = "${local.container_repository}/hadoop"
   }
 
   spark = {
     version = "3.4.0"
-    image = {
-      name = "${var.container_repository}/${var.project}/spark"
-      tag  = "1.0"
-    }
+    image_name = "${local.container_repository}/spark"
     python_libraries = [
       "regex",
       "numpy",
@@ -39,31 +35,28 @@ locals {
   }
 
   jupyter = {
-    image = {
-      name = "${var.container_repository}/${var.project}/jupyter"
-      tag  = "1.0"
-    }
+    version = "4.0.0"
+    image_name = "${local.container_repository}/jupyter"
     python_libraries = [
       "matplotlib",
       "seaborn",
       "findspark",
       "pymongo",
     ]
+    almond = {
+      version = "0.13.13"
+      scala_version = "2.13.10"
+    }
   }
 
   hive_metastore = {
     version = "3.0.0"
-    image = {
-      name = "${var.container_repository}/${var.project}/hive-metastore"
-      tag  = "1.0"
-    }
+    image_name = "${local.container_repository}/hive-metastore"
   }
 
   hue = {
-    image = {
-      name = "${var.container_repository}/${var.project}/hue"
-      tag  = "4.11.0"
-    }
+    version = "4.11.0"
+    image_name =  "${local.container_repository}/hue"
   }
 
   additional_jars = {

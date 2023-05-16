@@ -1,7 +1,7 @@
 resource "local_file" "hue_dockerfile" {
   filename = "hue/Dockerfile"
   content  = <<-EOT
-		FROM gethue/hue:${local.hue.image.tag}
+		FROM gethue/hue:${local.hue.version}
 		RUN ./build/env/bin/pip install thrift_sasl && \
 			./build/env/bin/pip install pyhive
  	 EOT
@@ -10,9 +10,9 @@ resource "local_file" "hue_dockerfile" {
     command = <<-EOT
 		set -x
 		set -e
-		docker build --platform linux/amd64 -t ${basename(local.hue.image.name)}:${local.hue.image.tag} ${dirname(self.filename)}
-		docker tag ${basename(local.hue.image.name)}:${local.hue.image.tag} ${local.hue.image.name}:${local.hue.image.tag}
-		docker push ${local.hue.image.name}:${local.hue.image.tag}
+		docker build --platform linux/amd64 -t ${basename(local.hue.image_name)}:${local.hue.version} ${dirname(self.filename)}
+		docker tag ${basename(local.hue.image_name)}:${local.hue.version} ${local.hue.image_name}:${local.hue.version}
+		docker push ${local.hue.image_name}:${local.hue.version}
 	EOT
   }
 }

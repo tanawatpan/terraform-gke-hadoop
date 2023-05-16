@@ -125,7 +125,7 @@ resource "kubernetes_stateful_set_v1" "namenode" {
 
         container {
           name  = kubernetes_service_v1.namenode.metadata.0.name
-          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
+          image = "${local.hadoop.image_name}:${local.hadoop.version}"
 
           env {
             name  = "NODE_TYPE"
@@ -222,7 +222,7 @@ resource "kubernetes_stateful_set_v1" "datanode" {
 
         container {
           name  = "datanode"
-          image = "${local.hadoop.image.name}:${local.hadoop.image.tag}"
+          image = "${local.hadoop.image_name}:${local.hadoop.version}"
 
           env {
             name  = "NODE_TYPE"

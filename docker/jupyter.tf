@@ -7,13 +7,18 @@ resource "local_file" "install_jupyter" {
 		set -x
 
 		PYTHON_KERNEL=/home/$HADOOP_USER/$PYTHON_VENV/share/jupyter/kernels/python3/kernel.json
-		SCALA_KERNEL=/home/$HADOOP_USER/.local/share/jupyter/kernels/apache_toree_scala/kernel.json
+		TOREE_SCALA_KERNEL=/home/$HADOOP_USER/.local/share/jupyter/kernels/apache_toree_scala/kernel.json
+		SCALA_KERNEL=/home/$HADOOP_USER/.local/share/jupyter/kernels/scala/kernel.json
 		
 		function install_jupyterlab {
 			source $PYTHON_VENV_PATH/bin/activate
 										
 			echo 'Installing Jupyterlab & Apache Toree ...'
-			pip3 install -q jupyterlab toree ${join(" ", local.jupyter.python_libraries)}
+			pip3 install -q jupyterlab==${local.jupyter.version} toree ${join(" ", local.jupyter.python_libraries)}
+
+			wget https://git.io/coursier-cli
+			chmod +x coursier-cli
+			./coursier-cli launch --fork almond:${local.jupyter.almond.version} --scala ${local.jupyter.almond.scala_version} -- --install
 	
 			jupyter lab --generate-config
 			jupyter toree install --spark_home=$SPARK_HOME --interpreters=Scala --user
@@ -22,6 +27,7 @@ resource "local_file" "install_jupyter" {
 
 			echo 'Inserting Jupyter Kernel Setting ...'
 			jq ".env  = { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $PYTHON_KERNEL > /tmp/tmp.json && mv -f /tmp/tmp.json $PYTHON_KERNEL && cat $PYTHON_KERNEL 
+			jq ".env += { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $TOREE_SCALA_KERNEL  > /tmp/tmp.json && mv -f /tmp/tmp.json $TOREE_SCALA_KERNEL  && cat $TOREE_SCALA_KERNEL 
 			jq ".env += { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $SCALA_KERNEL  > /tmp/tmp.json && mv -f /tmp/tmp.json $SCALA_KERNEL  && cat $SCALA_KERNEL 
 
 			# Config Jupyter Lab Theme
@@ -80,7 +86,7 @@ resource "local_file" "jupyter_dockerfile" {
   depends_on = [local_file.spark_dockerfile]
   filename   = "jupyter/Dockerfile"
   content    = <<-EOT
-		FROM ${basename(local.spark.image.name)}:${local.spark.image.tag}
+		FROM ${basename(local.spark.image_name)}:${local.spark.version}
 
 		USER root
 		COPY ${basename(local_file.install_jupyter.filename)} /tmp/${basename(local_file.install_jupyter.filename)}
@@ -98,9 +104,9 @@ resource "local_file" "jupyter_dockerfile" {
     command = <<-EOT
 		set -x
 		set -e
-		docker build --platform linux/amd64 -t ${basename(local.jupyter.image.name)}:${local.jupyter.image.tag} ${dirname(self.filename)}
-		docker tag ${basename(local.jupyter.image.name)}:${local.jupyter.image.tag} ${local.jupyter.image.name}:${local.jupyter.image.tag}
-		docker push ${local.jupyter.image.name}:${local.jupyter.image.tag}
+		docker build --platform linux/amd64 -t ${basename(local.jupyter.image_name)}:${local.jupyter.version} ${dirname(self.filename)}
+		docker tag ${basename(local.jupyter.image_name)}:${local.jupyter.version} ${local.jupyter.image_name}:${local.jupyter.version}
+		docker push ${local.jupyter.image_name}:${local.jupyter.version}
 	EOT
   }
 
