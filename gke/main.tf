@@ -11,7 +11,3 @@ provider "google" {
   region  = var.region
   zone    = var.zone
 }
-
-locals {
-  cluster_name = "cluster-1"
-}

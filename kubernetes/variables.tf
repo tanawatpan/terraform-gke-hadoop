@@ -28,6 +28,11 @@ variable "zone" {
   }
 }
 
+variable "cluster_name" {
+  type        = string
+  description = "Name of the GKE cluster"
+}
+
 variable "container_repository" {
   type        = string
   description = "Container Registry repository name"

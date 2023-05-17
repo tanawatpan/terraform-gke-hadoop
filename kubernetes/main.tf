@@ -56,8 +56,6 @@ provider "helm" {
 }
 
 locals {
-  cluster_name = "cluster-1"
-
   container_repository = "${var.container_repository}/${var.project}"
 
   hadoop = {

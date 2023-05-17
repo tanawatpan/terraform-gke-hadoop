@@ -1,5 +1,5 @@
 resource "google_container_cluster" "cluster" {
-  name            = local.cluster_name
+  name            = var.cluster_name
   location        = var.zone
   network         = google_compute_network.vpc.self_link
   subnetwork      = google_compute_subnetwork.subnet.self_link
@@ -67,12 +67,12 @@ resource "google_container_node_pool" "node_pool" {
   name       = "node-pool"
   cluster    = google_container_cluster.cluster.name
   location   = var.zone
-  node_count = 3
+  node_count = var.node_count
 
   node_config {
     preemptible  = true
-    machine_type = "n1-standard-4"
-    disk_size_gb = 50
+    machine_type = var.machine_type
+    disk_size_gb = var.disk_size_gb
     disk_type    = "pd-balanced"
 
     metadata = {
@@ -95,7 +95,7 @@ resource "google_container_node_pool" "node_pool" {
   }
 
   upgrade_settings {
-    max_surge       = 0
+    max_surge       = 1
     max_unavailable = 0
   }
 

@@ -27,3 +27,23 @@ variable "zone" {
     error_message = "The zone must follow Google Cloud's naming convention (e.g., 'us-central1-a')."
   }
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "Name of the GKE cluster"
+}
+
+variable "node_count" {
+  type        = string
+  description = "Number of nodes in the GKE cluster"
+}
+
+variable "machine_type" {
+  type        = string
+  description = "Machine type for the GKE cluster"
+}
+
+variable "disk_size_gb" {
+  type        = string
+  description = "Disk size for the GKE cluster"
+}
