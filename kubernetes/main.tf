@@ -59,13 +59,13 @@ locals {
   container_repository = "${var.container_repository}/${var.project}"
 
   hadoop = {
-    user = "hadoop"
-    version = "3.3.5"
+    user       = "hadoop"
+    version    = "3.3.5"
     image_name = "${local.container_repository}/hadoop"
   }
 
   spark = {
-    version = "3.4.0"
+    version    = "3.4.0"
     image_name = "${local.container_repository}/spark"
     worker = {
       replicas = 4
@@ -75,12 +75,12 @@ locals {
   }
 
   jupyter = {
-    version = "4.0.0"
+    version    = "4.0.0"
     image_name = "${local.container_repository}/jupyter"
   }
 
   hive_metastore = {
-    version = "3.0.0"
+    version    = "3.0.0"
     image_name = "${local.container_repository}/hive-metastore"
 
     warehouse = "user/hive/warehouse"
@@ -112,7 +112,7 @@ locals {
       data_directory = "/var/lib/zookeeper"
       package_url    = "https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.7.1-bin.tar.gz"
     }
-    
+
     mongodb_driver_version = "4.4.2"
   }
 
@@ -125,8 +125,8 @@ locals {
   hue = {
     replicas = 1
 
-    version = "4.11.0"
-    image_name =  "${local.container_repository}/hue"
+    version    = "4.11.0"
+    image_name = "${local.container_repository}/hue"
 
     postgres = {
       version  = "14.7"
