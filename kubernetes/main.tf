@@ -24,7 +24,7 @@ provider "google" {
 data "google_client_config" "provider" {}
 
 data "google_container_cluster" "cluster" {
-  name     = local.cluster_name
+  name     = var.cluster_name
   location = var.zone
 }
 
