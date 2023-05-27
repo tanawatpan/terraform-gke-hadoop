@@ -101,7 +101,7 @@ resource "local_file" "jupyter_dockerfile" {
   content    = <<-EOT
 		FROM ${local.spark.image_name}:${local.spark.version}
 
-		RUN echo "${basename(local.jupyter.image_name)}:${local.jupyter.version}" > /etc/image_name
+		RUN echo "${basename(local.jupyter.image_name)}:${local.jupyter.version}" > /tmp/image_name
 
 		USER root
 		COPY ${basename(local_file.install_jupyter.filename)} /tmp/${basename(local_file.install_jupyter.filename)}

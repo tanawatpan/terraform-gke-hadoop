@@ -142,7 +142,7 @@ resource "local_file" "hadoop_dockerfile" {
   content  = <<-EOT
 		FROM ubuntu:kinetic
 
-		RUN echo "${basename(local.hadoop.image_name)}:${local.hadoop.version}" > /etc/image_name
+		RUN echo "${basename(local.hadoop.image_name)}:${local.hadoop.version}" > /tmp/image_name
 
 		RUN apt-get -q -y update && \
 			apt-get -q -y install wget ssh net-tools telnet curl dnsutils jq openjdk-11-jre python3 python3-venv

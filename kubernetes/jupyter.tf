@@ -29,7 +29,8 @@ data "http" "nvidia_driver_installer_manifest" {
 }
 
 resource "kubectl_manifest" "nvidia_driver_installer" {
-  yaml_body = data.http.nvidia_driver_installer_manifest.response_body
+  yaml_body        = data.http.nvidia_driver_installer_manifest.response_body
+  wait_for_rollout = true
 }
 
 resource "kubernetes_pod_v1" "jupyter" {

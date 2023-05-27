@@ -158,7 +158,7 @@ resource "local_file" "spark_dockerfile" {
   content    = <<-EOT
 		FROM ${local.hadoop.image_name}:${local.hadoop.version}
 
-		RUN echo "${basename(local.spark.image_name)}:${local.spark.version}" > /etc/image_name
+		RUN echo "${basename(local.spark.image_name)}:${local.spark.version}" > /tmp/image_name
 
 		ARG EXTERNAL_JARS="${join(" ", [for lib, url in local.additional_jars : url])}"
 
