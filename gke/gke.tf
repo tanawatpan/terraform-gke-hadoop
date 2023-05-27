@@ -63,17 +63,77 @@ resource "google_container_cluster" "cluster" {
   }
 }
 
-resource "google_container_node_pool" "node_pool" {
-  name       = "node-pool"
+resource "google_container_node_pool" "primary" {
+  name       = "primary"
   cluster    = google_container_cluster.cluster.name
   location   = var.zone
-  node_count = var.node_count
+  node_count = var.primary_node_count
 
   node_config {
     preemptible  = true
-    machine_type = var.machine_type
-    disk_size_gb = var.disk_size_gb
+    machine_type = var.primary_machine_type
+    disk_size_gb = var.primary_disk_size_gb
     disk_type    = "pd-balanced"
+
+    dynamic "guest_accelerator" {
+      for_each = var.primary_gpu_count > 0 ? [1] : []
+      content {
+        type  = var.primary_gpu_type
+        count = var.primary_gpu_count
+      }
+    }
+
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/devstorage.read_write",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/servicecontrol",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/trace.append",
+    ]
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
+
+  upgrade_settings {
+    max_surge       = 1
+    max_unavailable = 0
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      google_container_cluster.cluster.id
+    ]
+  }
+}
+
+
+resource "google_container_node_pool" "secondary" {
+  name       = "secondary"
+  cluster    = google_container_cluster.cluster.name
+  location   = var.zone
+  node_count = var.secondary_node_count
+
+  node_config {
+    preemptible  = true
+    machine_type = var.secondary_machine_type
+    disk_size_gb = var.secondary_disk_size_gb
+    disk_type    = "pd-balanced"
+
+    dynamic "guest_accelerator" {
+      for_each = var.secondary_gpu_count > 0 ? [1] : []
+      content {
+        type  = var.secondary_gpu_type
+        count = var.secondary_gpu_count
+      }
+    }
 
     metadata = {
       disable-legacy-endpoints = "true"

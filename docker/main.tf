@@ -18,13 +18,13 @@ locals {
   container_repository = "${var.container_repository}/${var.project}"
 
   hadoop = {
-    user    = "hadoop"
-    version = "3.3.5"
+    user       = "hadoop"
+    version    = "3.3.5"
     image_name = "${local.container_repository}/hadoop"
   }
 
   spark = {
-    version = "3.4.0"
+    version    = "3.4.0"
     image_name = "${local.container_repository}/spark"
     python_libraries = [
       "regex",
@@ -35,28 +35,31 @@ locals {
   }
 
   jupyter = {
-    version = "4.0.0"
+    version    = "4.0.0"
     image_name = "${local.container_repository}/jupyter"
-    python_libraries = [
-      "matplotlib",
-      "seaborn",
-      "findspark",
-      "pymongo",
-    ]
+    python = {
+      version = "3.11"
+      libraries = [
+        "matplotlib",
+        "seaborn",
+        "findspark",
+        "pymongo",
+      ]
+    }
     almond = {
-      version = "0.13.13"
+      version       = "0.13.13"
       scala_version = "2.13.10"
     }
   }
 
   hive_metastore = {
-    version = "3.0.0"
+    version    = "3.0.0"
     image_name = "${local.container_repository}/hive-metastore"
   }
 
   hue = {
-    version = "4.11.0"
-    image_name =  "${local.container_repository}/hue"
+    version    = "4.11.0"
+    image_name = "${local.container_repository}/hue"
   }
 
   additional_jars = {

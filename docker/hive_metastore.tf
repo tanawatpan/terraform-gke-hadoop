@@ -115,11 +115,7 @@ resource "local_file" "hive_metastore_dockerfile" {
 
   provisioner "local-exec" {
     command = <<-EOT
-		set -x
-		set -e
-		docker build --platform linux/amd64 -t ${basename(local.hive_metastore.image_name)}:${local.hive_metastore.version} ${dirname(self.filename)}
-		docker tag ${basename(local.hive_metastore.image_name)}:${local.hive_metastore.version} ${local.hive_metastore.image_name}:${local.hive_metastore.version}
-		docker push ${local.hive_metastore.image_name}:${local.hive_metastore.version}
+		gcloud builds submit --tag ${local.hive_metastore.image_name}:${local.hive_metastore.version} ${dirname(self.filename)}
 	EOT
   }
 

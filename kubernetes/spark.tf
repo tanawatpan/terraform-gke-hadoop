@@ -179,15 +179,13 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
   }
 }
 
-resource "kubernetes_deployment_v1" "spark_worker" {
+resource "kubernetes_daemon_set_v1" "spark_worker" {
   metadata {
     name      = "spark-worker"
     namespace = kubernetes_namespace.hadoop.metadata.0.name
   }
 
   spec {
-    replicas = local.spark.worker.replicas
-
     selector {
       match_labels = {
         app = "spark-worker"
@@ -204,16 +202,13 @@ resource "kubernetes_deployment_v1" "spark_worker" {
       spec {
         service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
 
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "primary"
+        }
+
         container {
           name  = "spark-worker"
           image = "${local.spark.image_name}:${local.spark.version}"
-
-          resources {
-            requests = {
-              cpu    = local.spark.worker.cpu
-              memory = local.spark.worker.memory
-            }
-          }
 
           env {
             name  = "NODE_TYPE"

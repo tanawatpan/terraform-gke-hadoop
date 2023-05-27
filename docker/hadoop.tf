@@ -142,7 +142,7 @@ resource "local_file" "hadoop_dockerfile" {
   content  = <<-EOT
 		FROM ubuntu:kinetic
 
-		RUN echo "${basename(local.hadoop.image_name)}-${local.hadoop.version}"
+		RUN echo "${basename(local.hadoop.image_name)}:${local.hadoop.version}" > /etc/image_name
 
 		RUN apt-get -q -y update && \
 			apt-get -q -y install wget ssh net-tools telnet curl dnsutils jq openjdk-11-jre python3 python3-venv
@@ -175,13 +175,8 @@ resource "local_file" "hadoop_dockerfile" {
  	 EOT
 
   provisioner "local-exec" {
-    # gcloud builds submit --tag ${local.hadoop.image_name}:${local.hadoop.version} hadoop/ 
     command = <<-EOT
-		set -x
-		set -e
-		docker build --platform linux/amd64 -t ${basename(local.hadoop.image_name)}:${local.hadoop.version} ${dirname(self.filename)}
-		docker tag ${basename(local.hadoop.image_name)}:${local.hadoop.version} ${local.hadoop.image_name}:${local.hadoop.version}
-		docker push ${local.hadoop.image_name}:${local.hadoop.version}
+		gcloud builds submit --tag ${local.hadoop.image_name}:${local.hadoop.version} ${dirname(self.filename)}
 	EOT
   }
 

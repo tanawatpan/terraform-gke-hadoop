@@ -50,6 +50,7 @@ resource "local_file" "install_spark" {
 						export SPARK_MASTER_PORT=7077
 						export SPARK_MASTER_WEBUI_PORT=8080
 						export SPARK_WORKER_CORES=$${SPARK_WORKER_CORES:=1}
+						export SPARK_WORKER_MEMORY=$${SPARK_WORKER_MEMORY:=2g}
 
 						export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:\\\$LD_LIBRARY_PATH
 					EOL
@@ -111,6 +112,12 @@ resource "local_file" "spark_entrypoint" {
 
 		source /home/$HADOOP_USER/config.sh
 
+		AVAILABLE_CORES=$(nproc)
+		AVAILABLE_MEMORY=$(free -g | awk '/^Mem:/ {print $2}')
+
+		SPARK_WORKER_CORES=$(( AVAILABLE_CORES > 1 ? AVAILABLE_CORES - 1 : 1 ))
+		SPARK_WORKER_MEMORY="$(( AVAILABLE_MEMORY > 3 ? AVAILABLE_MEMORY - 2 : 1 ))g"
+
 		NODE_TYPE=$${NODE_TYPE^^}
 		echo "NODE_TYPE: $NODE_TYPE"
 
@@ -149,7 +156,9 @@ resource "local_file" "spark_dockerfile" {
   depends_on = [local_file.hadoop_dockerfile]
   filename   = "spark/Dockerfile"
   content    = <<-EOT
-		FROM ${basename(local.hadoop.image_name)}:${local.hadoop.version}
+		FROM ${local.hadoop.image_name}:${local.hadoop.version}
+
+		RUN echo "${basename(local.spark.image_name)}:${local.spark.version}" > /etc/image_name
 
 		ARG EXTERNAL_JARS="${join(" ", [for lib, url in local.additional_jars : url])}"
 
@@ -174,11 +183,7 @@ resource "local_file" "spark_dockerfile" {
 
   provisioner "local-exec" {
     command = <<-EOT
-		set -x
-		set -e
-		docker build --platform linux/amd64 -t ${basename(local.spark.image_name)}:${local.spark.version} ${dirname(self.filename)}
-		docker tag ${basename(local.spark.image_name)}:${local.spark.version} ${local.spark.image_name}:${local.spark.version}
-		docker push ${local.spark.image_name}:${local.spark.version}
+		gcloud builds submit --tag ${local.spark.image_name}:${local.spark.version} ${dirname(self.filename)}
 	EOT
   }
 

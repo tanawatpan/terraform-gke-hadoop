@@ -67,11 +67,6 @@ locals {
   spark = {
     version    = "3.4.0"
     image_name = "${local.container_repository}/spark"
-    worker = {
-      replicas = 4
-      cpu      = "1000m"
-      memory   = "4Gi"
-    }
   }
 
   jupyter = {
