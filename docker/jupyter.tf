@@ -94,7 +94,7 @@ resource "local_file" "jupyter_dockerfile" {
 		RUN apt-get -q -y update \
 		 && apt-get -q -y install wget ssh net-tools telnet curl dnsutils jq openjdk-11-jre
 
-		RUN curl https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64 -o jq \
+		RUN curl -L -o jq https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64 \
 		 && chmod +x jq \
 		 && mv jq /usr/local/bin/jq
 
@@ -110,7 +110,9 @@ resource "local_file" "jupyter_dockerfile" {
 		ENV PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
 
 		RUN groupadd -r $HADOOP_USER --gid=1000 \
-			&& useradd -r -g $HADOOP_USER --uid=1000 -m $HADOOP_USER 
+			&& useradd -r -g $HADOOP_USER --uid=1000 -m $HADOOP_USER \
+			&& usermod -a -G root $HADOOP_USER \
+			&& chmod g+w /etc
 
 		COPY --chown=$HADOOP_USER:$HADOOP_USER --from=builder /home/$HADOOP_USER/.ssh/ /home/$HADOOP_USER/.ssh/
 		COPY --chown=$HADOOP_USER:$HADOOP_USER --from=builder $HADOOP_HOME $HADOOP_HOME
