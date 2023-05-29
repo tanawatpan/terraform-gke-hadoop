@@ -21,10 +21,10 @@ resource "kubernetes_service_v1" "postgres_hue" {
     type = "ClusterIP"
   }
 
-    lifecycle {
-      ignore_changes = [
-        metadata.0.annotations,
-      ]
+  lifecycle {
+    ignore_changes = [
+      metadata.0.annotations,
+    ]
   }
 }
 
@@ -52,6 +52,10 @@ resource "kubernetes_stateful_set_v1" "postgres_hue" {
       }
 
       spec {
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         container {
           name  = "postgres-hue"
           image = "postgres:${local.hue.postgres.version}"

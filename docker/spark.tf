@@ -153,7 +153,7 @@ resource "local_file" "spark_entrypoint" {
 }
 
 resource "local_file" "spark_dockerfile" {
-  depends_on = [local_file.hadoop_dockerfile]
+  depends_on = [google_artifact_registry_repository.repository, local_file.hadoop_dockerfile]
   filename   = "spark/Dockerfile"
   content    = <<-EOT
 		FROM ${local.hadoop.image_name}:${local.hadoop.version}

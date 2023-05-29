@@ -70,7 +70,7 @@ resource "google_container_node_pool" "primary" {
   node_count = var.primary_node_count
 
   node_config {
-    preemptible  = true
+    spot         = true
     machine_type = var.primary_machine_type
     disk_size_gb = var.primary_disk_size_gb
     disk_type    = "pd-balanced"
@@ -122,7 +122,7 @@ resource "google_container_node_pool" "secondary" {
   node_count = var.secondary_node_count
 
   node_config {
-    preemptible  = true
+    spot         = true
     machine_type = var.secondary_machine_type
     disk_size_gb = var.secondary_disk_size_gb
     disk_type    = "pd-balanced"
@@ -155,8 +155,8 @@ resource "google_container_node_pool" "secondary" {
   }
 
   upgrade_settings {
-    max_surge       = 1
-    max_unavailable = 0
+    max_surge       = 0
+    max_unavailable = 1
   }
 
   lifecycle {

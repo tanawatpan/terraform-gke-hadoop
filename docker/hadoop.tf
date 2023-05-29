@@ -138,8 +138,9 @@ resource "local_file" "hadoop_entrypoint" {
 }
 
 resource "local_file" "hadoop_dockerfile" {
-  filename = "hadoop/Dockerfile"
-  content  = <<-EOT
+  depends_on = [google_artifact_registry_repository.repository]
+  filename   = "hadoop/Dockerfile"
+  content    = <<-EOT
 		FROM ubuntu:kinetic
 
 		RUN echo "${basename(local.hadoop.image_name)}:${local.hadoop.version}" 

@@ -107,6 +107,10 @@ resource "kubernetes_stateful_set_v1" "namenode" {
       }
 
       spec {
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         init_container {
           name  = "change-volume-owner"
           image = "busybox:latest"
@@ -204,6 +208,10 @@ resource "kubernetes_stateful_set_v1" "datanode" {
       }
 
       spec {
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         init_container {
           name  = "change-volume-owner"
           image = "busybox:latest"

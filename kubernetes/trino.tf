@@ -29,6 +29,12 @@ resource "helm_release" "trino" {
 		serviceAccount:
 		  create: false
 		  name: ${kubernetes_service_account.storage_admin.metadata.0.name}
+		coordinator:
+		  nodeSelector:
+		    "cloud.google.com/gke-nodepool": "secondary"
+		worker:
+		  nodeSelector:
+		    "cloud.google.com/gke-nodepool": "secondary"
 	EOL
   ]
 

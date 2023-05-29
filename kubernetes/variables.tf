@@ -33,9 +33,9 @@ variable "cluster_name" {
   description = "Name of the GKE cluster"
 }
 
-variable "container_repository" {
+variable "artifact_repository" {
   type        = string
-  description = "Container Registry repository name"
+  description = "Artifact Registry repository name"
 }
 
 variable "web_domain" {

@@ -39,6 +39,8 @@ resource "helm_release" "superset" {
 		  adminUser:
 		    username: admin
 		    password: "${var.superset_password}"
+		nodeSelector:
+		  "cloud.google.com/gke-nodepool": "secondary"
 	EOL
   ]
 

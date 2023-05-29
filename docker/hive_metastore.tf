@@ -69,8 +69,9 @@ resource "local_file" "hive_metastore_entrypoint" {
 }
 
 resource "local_file" "hive_metastore_dockerfile" {
-  filename = "hive-metastore/Dockerfile"
-  content  = <<-EOT
+  depends_on = [google_artifact_registry_repository.repository]
+  filename   = "hive-metastore/Dockerfile"
+  content    = <<-EOT
 		FROM ubuntu:kinetic as ${basename(local.hive_metastore.image_name)}-${local.hive_metastore.version}
 		
 		RUN apt-get update \

@@ -71,6 +71,10 @@ resource "kubernetes_deployment_v1" "hive_metastore" {
       spec {
         service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
 
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         container {
           name  = "hive-metastore"
           image = "${local.hive_metastore.image_name}:${local.hive_metastore.version}"
@@ -143,6 +147,10 @@ resource "kubernetes_stateful_set_v1" "hive_metastore_mysql" {
       }
 
       spec {
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         init_container {
           name  = "change-volume-owner"
           image = "busybox:latest"

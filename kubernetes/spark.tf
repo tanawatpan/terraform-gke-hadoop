@@ -127,6 +127,10 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
       spec {
         service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
 
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         container {
           name  = kubernetes_service_v1.spark_master.metadata.0.name
           image = "${local.spark.image_name}:${local.spark.version}"
@@ -253,6 +257,10 @@ resource "kubernetes_deployment_v1" "spark_history" {
       }
 
       spec {
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "secondary"
+        }
+
         container {
           name  = "spark-history"
           image = "${local.spark.image_name}:${local.spark.version}"

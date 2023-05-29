@@ -6,6 +6,9 @@ terraform {
     tls = {
       source = "hashicorp/tls"
     }
+    google = {
+      source = "hashicorp/google"
+    }
   }
 }
 
@@ -13,9 +16,20 @@ provider "tls" {}
 
 provider "local" {}
 
-locals {
+provider "google" {
+  project = var.project
+  region  = var.region
+  zone    = var.zone
+}
 
-  container_repository = "${var.container_repository}/${var.project}"
+resource "google_artifact_registry_repository" "repository" {
+  location      = var.region
+  repository_id = var.artifact_repository
+  format        = "DOCKER"
+}
+
+locals {
+  container_repository = "${var.region}-docker.pkg.dev/${var.project}/${var.artifact_repository}"
 
   hadoop = {
     user       = "hadoop"
@@ -30,7 +44,7 @@ locals {
       "regex",
       "numpy",
       "scipy",
-      "pandas",
+      "pandas"
     ]
   }
 
@@ -44,6 +58,7 @@ locals {
         "seaborn",
         "findspark",
         "pymongo",
+        "tensorflow==2.12.*"
       ]
     }
     almond = {

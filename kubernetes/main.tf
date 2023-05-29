@@ -56,7 +56,7 @@ provider "helm" {
 }
 
 locals {
-  container_repository = "${var.container_repository}/${var.project}"
+  container_repository = "${var.region}-docker.pkg.dev/${var.project}/${var.artifact_repository}"
 
   hadoop = {
     user       = "hadoop"
