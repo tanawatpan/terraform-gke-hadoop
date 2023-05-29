@@ -26,8 +26,8 @@ resource "local_file" "install_jupyter" {
 			PYTHON_KERNEL=$CONDA_PREFIX/share/jupyter/kernels/python3/kernel.json
 			TOREE_SCALA_KERNEL=/home/$HADOOP_USER/.local/share/jupyter/kernels/apache_toree_scala/kernel.json
 			
-			jq ".env  = { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $PYTHON_KERNEL > /tmp/tmp.json && mv -f /tmp/tmp.json $PYTHON_KERNEL && cat $PYTHON_KERNEL 
-			jq ".env += { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $TOREE_SCALA_KERNEL  > /tmp/tmp.json && mv -f /tmp/tmp.json $TOREE_SCALA_KERNEL  && cat $TOREE_SCALA_KERNEL 
+			mv $PYTHON_KERNEL      $${PYTHON_KERNEL}_bk      && jq ".env  = { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $${PYTHON_KERNEL}_bk > $PYTHON_KERNEL 
+			mv $TOREE_SCALA_KERNEL $${TOREE_SCALA_KERNEL}_bk && jq ".env += { \"PATH\": \"\$PATH:$PYTHON_VENV_PATH/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin\" }" $${TOREE_SCALA_KERNEL}_bk  > $TOREE_SCALA_KERNEL 
 
 			mkdir -p ~/.jupyter/lab/user-settings/@jupyterlab/apputils-extension 
 			echo '{ "theme": "JupyterLab Dark" }' >>  ~/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/themes.jupyterlab-settings
@@ -91,9 +91,14 @@ resource "local_file" "jupyter_dockerfile" {
 
 		RUN echo "${basename(local.jupyter.image_name)}:${local.jupyter.version}" 
 
+		RUN apt-get -q -y update \
+		 && apt-get -q -y install wget ssh net-tools telnet curl dnsutils jq openjdk-11-jre
+
 		RUN curl https://github.com/jqlang/jq/releases/download/jq-1.6/jq-linux64 -o jq \
 		 && chmod +x jq \
 		 && mv jq /usr/local/bin/jq
+
+		ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 		ENV HADOOP_USER="${local.hadoop.user}"
 		ENV HADOOP_HOME=/opt/hadoop
