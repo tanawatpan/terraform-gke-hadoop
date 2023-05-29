@@ -128,7 +128,7 @@ resource "kubernetes_stateful_set_v1" "spark_master" {
         service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
 
         node_selector = {
-          "cloud.google.com/gke-nodepool" = "secondary"
+          "cloud.google.com/gke-nodepool" = "primary"
         }
 
         container {
@@ -258,7 +258,7 @@ resource "kubernetes_deployment_v1" "spark_history" {
 
       spec {
         node_selector = {
-          "cloud.google.com/gke-nodepool" = "secondary"
+          "cloud.google.com/gke-nodepool" = "primary"
         }
 
         container {

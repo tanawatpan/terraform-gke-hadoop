@@ -107,6 +107,7 @@ resource "local_file" "jupyter_dockerfile" {
 		RUN groupadd -r $HADOOP_USER --gid=1000 \
 			&& useradd -r -g $HADOOP_USER --uid=1000 -m $HADOOP_USER 
 
+		COPY --chown=$HADOOP_USER:$HADOOP_USER --from=builder /home/$HADOOP_USER/.ssh/ /home/$HADOOP_USER/.ssh/
 		COPY --chown=$HADOOP_USER:$HADOOP_USER --from=builder $HADOOP_HOME $HADOOP_HOME
 		COPY --chown=$HADOOP_USER:$HADOOP_USER --from=builder $SPARK_HOME  $SPARK_HOME
 

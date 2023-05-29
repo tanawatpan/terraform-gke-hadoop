@@ -53,7 +53,7 @@ resource "kubernetes_stateful_set_v1" "postgres_hue" {
 
       spec {
         node_selector = {
-          "cloud.google.com/gke-nodepool" = "secondary"
+          "cloud.google.com/gke-nodepool" = "primary"
         }
 
         container {

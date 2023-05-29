@@ -108,7 +108,7 @@ resource "kubernetes_stateful_set_v1" "namenode" {
 
       spec {
         node_selector = {
-          "cloud.google.com/gke-nodepool" = "secondary"
+          "cloud.google.com/gke-nodepool" = "primary"
         }
 
         init_container {
@@ -209,7 +209,7 @@ resource "kubernetes_stateful_set_v1" "datanode" {
 
       spec {
         node_selector = {
-          "cloud.google.com/gke-nodepool" = "secondary"
+          "cloud.google.com/gke-nodepool" = "primary"
         }
 
         init_container {

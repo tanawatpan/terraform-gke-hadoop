@@ -31,10 +31,10 @@ resource "helm_release" "trino" {
 		  name: ${kubernetes_service_account.storage_admin.metadata.0.name}
 		coordinator:
 		  nodeSelector:
-		    "cloud.google.com/gke-nodepool": "secondary"
+		    "cloud.google.com/gke-nodepool": "primary"
 		worker:
 		  nodeSelector:
-		    "cloud.google.com/gke-nodepool": "secondary"
+		    "cloud.google.com/gke-nodepool": "primary"
 	EOL
   ]
 

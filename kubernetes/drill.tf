@@ -80,7 +80,7 @@ resource "kubernetes_stateful_set_v1" "drill" {
         service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
 
         node_selector = {
-          "cloud.google.com/gke-nodepool" = "secondary"
+          "cloud.google.com/gke-nodepool" = "primary"
         }
 
         container {
