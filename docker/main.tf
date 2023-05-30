@@ -58,12 +58,9 @@ locals {
         "seaborn",
         "findspark",
         "pymongo",
-        "tensorflow==2.12.*"
+        "tensorflow==2.12.*",
+        "transformers"
       ]
-    }
-    almond = {
-      version       = "0.13.13"
-      scala_version = "2.13.10"
     }
   }
 

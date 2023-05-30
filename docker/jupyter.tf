@@ -50,20 +50,22 @@ resource "local_file" "jupyter_entrypoint" {
 
 		source /home/$HADOOP_USER/config.sh
 
+		HASHED_PASSWORD=$(python3 -c "from IPython.lib import passwd; print(passwd('$JUPYTER_PASSWORD'))")
+
 		function config_jupyter {
 			# Config Jupyter Lab
 			cat >> ~/.jupyter/jupyter_notebook_config.py <<-EOL
 				c.ServerApp.ip = '0.0.0.0'
 				c.ServerApp.port = 8888
 				c.ServerApp.allow_origin = '*'
-				c.IdentityProvider.token = "$${JUPYTER_PWD:=P@ssw0rd}"
+				c.NotebookApp.password = "$HASHED_PASSWORD"
 				c.NotebookApp.open_browser = False
 		
-				c.MappingKernelManager.cull_idle_timeout = 8 * 60
-				c.MappingKernelManager.cull_interval = 2 * 60
+				c.MappingKernelManager.cull_idle_timeout = $${CULL_IDLE_TIMEOUT:=600}
+				c.MappingKernelManager.cull_interval = $${CULL_INTERVAL:=120}
 		
-				c.RemoteKernelManager.cull_idle_timeout = 8 * 60
-				c.RemoteKernelManager.cull_interval = 2 * 60
+				c.RemoteKernelManager.cull_idle_timeout = $${CULL_IDLE_TIMEOUT:=600}
+				c.RemoteKernelManager.cull_interval =  $${CULL_INTERVAL:=120}
 
 				c.LabServerApp.notebook_starts_kernel = False
 			EOL
