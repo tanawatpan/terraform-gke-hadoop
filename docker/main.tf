@@ -59,7 +59,8 @@ locals {
         "findspark",
         "pymongo",
         "tensorflow==2.12.*",
-        "transformers"
+        "transformers",
+        "notebook"
       ]
     }
   }

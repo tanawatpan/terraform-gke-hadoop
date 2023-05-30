@@ -65,3 +65,9 @@ variable "hive_metastore_mysql_password" {
   sensitive   = true
   description = "Hive Metastore Mysql Password"
 }
+
+variable "jupyter_password" {
+  type        = string
+  sensitive   = true
+  description = "Jupyter password"
+}

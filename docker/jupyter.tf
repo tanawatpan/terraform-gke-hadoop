@@ -50,7 +50,7 @@ resource "local_file" "jupyter_entrypoint" {
 
 		source /home/$HADOOP_USER/config.sh
 
-		HASHED_PASSWORD=$(python3 -c "from IPython.lib import passwd; print(passwd('$JUPYTER_PASSWORD'))")
+		HASHED_PASSWORD=$(python3 -c "from notebook.auth import passwd; print(passwd('$JUPYTER_PASSWORD'))")
 
 		function config_jupyter {
 			# Config Jupyter Lab

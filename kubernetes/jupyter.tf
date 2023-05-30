@@ -33,25 +33,6 @@ resource "kubectl_manifest" "nvidia_driver_installer" {
   wait_for_rollout = true
 }
 
-resource "kubernetes_persistent_volume_claim" "jupyter_notebooks" {
-  wait_until_bound = false
-
-  metadata {
-    name      = "jupyter-notebooks"
-    namespace = kubernetes_namespace.hadoop.metadata.0.name
-  }
-
-  spec {
-    storage_class_name = "standard-rwo"
-    access_modes       = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = "1Gi"
-      }
-    }
-  }
-}
-
 resource "kubernetes_stateful_set_v1" "jupyter" {
   metadata {
     name      = "jupyter"
@@ -102,6 +83,11 @@ resource "kubernetes_stateful_set_v1" "jupyter" {
         container {
           name  = "jupyter"
           image = "${local.jupyter.image_name}:${local.jupyter.version}"
+
+          env {
+            name  = "JUPYTER_PASSWORD"
+            value = var.jupyter_password
+          }
 
           env {
             name  = "SPARK_DRIVER_MEMORY"
