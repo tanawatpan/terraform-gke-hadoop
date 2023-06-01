@@ -324,6 +324,10 @@ resource "kubernetes_deployment_v1" "spark_thrift" {
       spec {
         service_account_name = kubernetes_service_account.storage_admin.metadata.0.name
 
+        node_selector = {
+          "cloud.google.com/gke-nodepool" = "primary"
+        }
+
         container {
           name  = "spark-thrift"
           image = "${local.spark.image_name}:${local.spark.version}"
