@@ -58,9 +58,12 @@ locals {
         "seaborn",
         "findspark",
         "pymongo",
+        "scikit-learn",
         "tensorflow==2.12.*",
         "transformers",
-        "notebook"
+        "notebook",
+        "tqdm",
+        "pyarrow"
       ]
     }
   }
