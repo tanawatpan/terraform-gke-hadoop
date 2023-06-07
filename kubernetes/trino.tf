@@ -43,6 +43,16 @@ resource "helm_release" "trino" {
     value = local.trino.worker.replicas
   }
 
+  set {
+    name  = "worker.config.query.maxMemoryPerNode"
+    value = "4GB"
+  }
+
+  set {
+    name  = "server.config.query.maxMemory"
+    value = "12GB"
+  }
+
   cleanup_on_fail = true
   wait_for_jobs   = true
   timeout         = 600
