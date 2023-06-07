@@ -44,7 +44,10 @@ locals {
       "regex",
       "numpy",
       "scipy",
-      "pandas"
+      "pyarrow",
+      "pandas",
+      "scikit-learn",
+      "nltk"
     ]
   }
 
@@ -56,14 +59,16 @@ locals {
       libraries = [
         "matplotlib",
         "seaborn",
-        "findspark",
         "pymongo",
+        "notebook",
+        "tqdm",
+        "findspark",
+        "pyarrow",
+        "pandas",
         "scikit-learn",
         "tensorflow==2.12.*",
         "transformers",
-        "notebook",
-        "tqdm",
-        "pyarrow"
+        "nltk"
       ]
     }
   }

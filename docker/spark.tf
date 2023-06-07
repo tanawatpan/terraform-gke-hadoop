@@ -84,6 +84,9 @@ resource "local_file" "install_spark" {
 						spark.dynamicAllocation.initialExecutors    $${SPARK_INITIAL_EXECUTORS:=1}
 						spark.dynamicAllocation.maxExecutors        $${SPARK_MAX_EXECUTORS:=2}
 						spark.dynamicAllocation.executorIdleTimeout $${SPARK_EXECUTOR_IDLE_TIMEOUT:=60s}
+
+						spark.sql.execution.arrow.enabled           true
+						spark.sql.execution.arrow.pyspark.enabled   true
 					EOL
 				}
 
