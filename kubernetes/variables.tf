@@ -38,16 +38,6 @@ variable "artifact_repository" {
   description = "Artifact Registry repository name"
 }
 
-variable "web_domain" {
-  type        = string
-  description = "Web UI domain name, Please make sure to update your NS records to point to Google Cloud DNS"
-
-  validation {
-    condition     = can(regex("^([a-zA-Z0-9-_]+\\.)+[a-zA-Z]{2,}$", var.web_domain))
-    error_message = "The domain name must be a valid domain (e.g., 'example.com')."
-  }
-}
-
 variable "superset_password" {
   type        = string
   sensitive   = true
