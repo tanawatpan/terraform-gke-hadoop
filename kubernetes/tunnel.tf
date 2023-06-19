@@ -40,8 +40,9 @@ resource "kubernetes_deployment" "cloudflare_tunnel" {
 
       spec {
         container {
-          image = "cloudflare/cloudflared:latest"
-          name  = "cloudflare-tunnel"
+          image             = "cloudflare/cloudflared:latest"
+          image_pull_policy = "Always"
+          name              = "cloudflare-tunnel"
 
           resources {
             limits = {
