@@ -71,3 +71,10 @@ variable "jupyter_password" {
   sensitive   = true
   description = "Jupyter password"
 }
+
+# clouldflare tunnel token
+variable "cloudflare_tunnel_token" {
+  type        = string
+  sensitive   = true
+  description = "Cloudflare Tunnel Token"
+}
