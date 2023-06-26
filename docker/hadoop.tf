@@ -91,6 +91,7 @@ resource "local_file" "install_hadoop" {
 					EOL
 				}
 
+				export CLASSPATH=`$HADOOP_HOME/bin/hdfs classpath --glob`
 			EOF
 		}
 
